@@ -415,6 +415,15 @@ body {
 <script>
 const WORKER_URL = "https://qt2-carb-loader-agent.jesse-477.workers.dev";
 
+function getPlanToken() {
+  var p = new URLSearchParams(window.location.search);
+  var qp = p.get('plan_token');
+  if (qp) return qp;
+  var pathMatch = window.location.pathname.match(/\/plan\/([a-z0-9_]+)/i);
+  if (pathMatch) return pathMatch[1];
+  return null;
+}
+
 // ── PARSE URL PARAMS ──
 function getParams() {
   const p = new URLSearchParams(window.location.search);
@@ -812,6 +821,17 @@ OUTPUT — return ONLY valid JSON, no markdown fences:
 }
 
 // ── MAIN ──
+function getPlanToken() {
+  // Check query param ?plan_token=
+  const p = new URLSearchParams(window.location.search);
+  const qp = p.get('plan_token');
+  if (qp) return qp;
+  // Check URL path /plan/pl_xxxxxxxx
+  const pathMatch = window.location.pathname.match(/\/plan\/([a-z0-9_]+)/);
+  if (pathMatch) return pathMatch[1];
+  return null;
+}
+
 async function init() {
   // Show loading immediately
   document.getElementById('main').innerHTML = `
