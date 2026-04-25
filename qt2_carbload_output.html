@@ -505,7 +505,11 @@ function calcTargets(params) {
 function formatDate(dateStr, offsetDays) {
   if (!dateStr) return '';
   try {
-    const d = new Date(dateStr + 'T12:00:00');
+    let iso = dateStr;
+    // Handle MM/DD/YYYY from Jotform
+    const mdyMatch = dateStr.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if (mdyMatch) iso = `${mdyMatch[3]}-${mdyMatch[1].padStart(2,'0')}-${mdyMatch[2].padStart(2,'0')}`;
+    const d = new Date(iso + 'T12:00:00');
     d.setDate(d.getDate() + offsetDays);
     return d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
   } catch(e) { return ''; }
@@ -691,11 +695,17 @@ function buildPrompt(p, t) {
   const doTwoDay = t.twoDay > 0;
   const doTopup  = t.rmTopup > 0;
 
+  // Normalize cooking_situation — Jotform sends full option text, map to key
+  let cookingKey = p.cooking_situation || 'restaurant';
+  if (/microwave/i.test(cookingKey)) cookingKey = 'microwave';
+  else if (/no cook|no cooking|grocery|room temp/i.test(cookingKey)) cookingKey = 'no_cook';
+  else if (/restaurant/i.test(cookingKey)) cookingKey = 'restaurant';
+
   const cookingDesc = {
     restaurant: 'eating at restaurants — full menu available',
-    microwave: 'hotel room with microwave only — NO stovetop, NO pasta unless pre-cooked pouches',
-    no_cook: 'no cooking available — grocery store / room temperature foods only, NO pasta, NO hot foods'
-  }[p.cooking_situation] || 'eating at restaurants';
+    microwave:  'hotel room with microwave only — NO stovetop, NO pasta unless pre-cooked pouches',
+    no_cook:    'no cooking available — grocery store / room temperature foods only, NO pasta, NO hot foods'
+  }[cookingKey] || 'eating at restaurants';
 
   const approved = {
     breakfast:    p.foods_breakfast    || 'any appropriate breakfast foods',
@@ -710,9 +720,9 @@ ATHLETE PROFILE:
 - Body weight: ${p.body_weight_lbs} lbs (${t.kg} kg)
 - Expected race duration: ${t.hours.toFixed(1)} hours
 - Cooking situation: ${cookingDesc}
-- GI sensitivity: ${p.gi_sensitivity}
-- Dietary restrictions: ${p.dietary_restrictions || 'none'}
-- Foods to NEVER include: ${p.foods_never_include || 'none'}
+- GI sensitivity: ${/very.?sensitive/i.test(p.gi_sensitivity) ? 'Very Sensitive' : /sensitive/i.test(p.gi_sensitivity) ? 'Sensitive' : 'Normal'}
+- Dietary restrictions: ${p.dietary_restrictions || 'none'} — STRICT: if any restriction is listed (e.g. gluten-free), every single food item and substitution must comply. Gluten-free means NO wheat, NO pasta, NO bread, NO bagels, NO pretzels, NO crackers unless certified GF.
+- Foods to NEVER include: ${p.foods_never_include || 'none'} — these foods must not appear anywhere in the plan, including substitutions.
 - Additional notes: ${p.additional_notes || 'none'}
 
 APPROVED FOODS — build the plan ONLY from foods that appear in BOTH the approved list below AND the CHO reference table. Do not introduce any food not on the athlete's approved list.
@@ -755,7 +765,7 @@ ACCURACY RULES:
 3. Low fiber, low fat, low residue foods only.
 4. No foods the athlete hasn't approved.
 
-COOKING CONTEXT:
+COOKING CONTEXT (current athlete: ${cookingKey}):
 - microwave or no_cook: NO pasta. Use rice pouches, oatmeal, bread, bagels, pretzels, applesauce.
 - restaurant: pasta is permitted if on approved list.
 
@@ -994,8 +1004,11 @@ function savePDF() {
     const athleteName  = params.athlete_name || 'Athlete';
     const raceName     = params.race_name    || 'Race';
     const raceType     = params.race_type    ? ' · ' + params.race_type : '';
-    const raceDateDisp = params.race_date
-      ? ' · ' + new Date(params.race_date + 'T12:00:00').toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})
+    let _raceDateIso = params.race_date || '';
+    const _mdyPdf = _raceDateIso.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if (_mdyPdf) _raceDateIso = `${_mdyPdf[3]}-${_mdyPdf[1].padStart(2,'0')}-${_mdyPdf[2].padStart(2,'0')}`;
+    const raceDateDisp = _raceDateIso
+      ? ' · ' + new Date(_raceDateIso + 'T12:00:00').toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})
       : '';
     const hoursH = Math.floor(t.hours);
     const hoursM = Math.round((t.hours % 1) * 60).toString().padStart(2,'0');
