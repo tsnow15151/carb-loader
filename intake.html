@@ -230,6 +230,7 @@ select:invalid {
   color: #fc8181;
   display: none;
 }
+@keyframes spin { to { transform: rotate(360deg); } }
 </style>
 </head>
 <body>
@@ -251,9 +252,22 @@ select:invalid {
   </p>
 </div>
 
+<!-- TOKEN CHECKING STATE -->
+<div id="token-checking" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:40vh;gap:1rem;">
+  <div style="width:36px;height:36px;border:3px solid rgba(255,255,255,0.15);border-top-color:rgba(255,255,255,0.7);border-radius:50%;animation:spin 0.9s linear infinite;"></div>
+  <div style="font-size:14px;color:rgba(255,255,255,0.5);">Verifying your access link…</div>
+</div>
+
+<!-- TOKEN ERROR STATE -->
+<div id="token-error" style="display:none;flex-direction:column;align-items:center;justify-content:center;min-height:40vh;gap:1rem;padding:2rem;text-align:center;">
+  <div style="font-size:16px;font-weight:600;color:#fc8181;">Access Link Invalid</div>
+  <div id="token-error-msg" style="font-size:13px;color:rgba(255,255,255,0.5);max-width:420px;line-height:1.6;"></div>
+  <div style="font-size:12px;color:rgba(255,255,255,0.3);">Questions? Email us at support@qt2systems.com</div>
+</div>
+
 <!-- FORM -->
 <div class="form-wrap">
-  <form id="intake-form" novalidate>
+  <form id="intake-form" novalidate style="display:none;">
 
     <!-- ATHLETE & RACE INFO -->
     <div class="section-label">Athlete &amp; Race Info</div>
@@ -459,6 +473,52 @@ select:invalid {
 </div>
 
 <script>
+var WORKER_URL = "https://qt2-carb-loader-agent.jesse-477.workers.dev";
+
+// ── On load: validate purchase token ──
+(function() {
+  var params = new URLSearchParams(window.location.search);
+  var token  = params.get('token');
+
+  if (!token) {
+    showError("No access token found. Please use the link from your purchase confirmation email.");
+    return;
+  }
+
+  // Store token for use on submit
+  window._purchaseToken = token;
+
+  // Validate against Worker
+  fetch(WORKER_URL + '/validate/' + token)
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (!data.valid) {
+        showError(data.reason || "This link is invalid or has already been used.");
+      } else {
+        // Personalise greeting if first name available
+        if (data.first_name) {
+          var intro = document.querySelector('.intro p');
+          if (intro) intro.innerHTML = intro.innerHTML.replace(
+            'This form takes',
+            'Hi ' + data.first_name + '. This form takes'
+          );
+        }
+        document.getElementById('intake-form').style.display = 'block';
+        document.getElementById('token-checking').style.display = 'none';
+      }
+    })
+    .catch(function(err) {
+      showError("Could not verify your access link. Please try again or contact support.");
+    });
+})();
+
+function showError(msg) {
+  document.getElementById('token-checking').style.display = 'none';
+  document.getElementById('token-error').style.display = 'flex';
+  document.getElementById('token-error-msg').textContent = msg;
+}
+
+// ── Form submit ──
 document.getElementById('intake-form').addEventListener('submit', function(e) {
   e.preventDefault();
   var form = e.target;
@@ -482,31 +542,56 @@ document.getElementById('intake-form').addEventListener('submit', function(e) {
     return;
   }
 
-  var p = new URLSearchParams();
-
-  // Text / number / select fields
+  // Collect form data
+  var formData = {};
   var textFields = ['athlete_name','race_name','race_type','race_date','race_start_time',
     'expected_finish_time','body_weight_lbs','dietary_restrictions',
     'foods_never_include','additional_notes'];
   textFields.forEach(function(name) {
     var el = form.querySelector('[name="' + name + '"]');
-    if (el) p.set(name, el.value.trim());
+    if (el) formData[name] = el.value.trim();
   });
 
-  // Radio fields
-  p.set('cooking_situation', cookingChecked ? cookingChecked.value : '');
-  p.set('gi_sensitivity',    giChecked      ? giChecked.value      : '');
+  formData['cooking_situation'] = cookingChecked ? cookingChecked.value : '';
+  formData['gi_sensitivity']    = giChecked      ? giChecked.value      : '';
 
-  // Checkbox groups
   var checkFields = ['foods_breakfast','foods_lunch_dinner','foods_snacks','foods_race_morning'];
   checkFields.forEach(function(name) {
     var checked = Array.from(form.querySelectorAll('input[name="' + name + '"]:checked'))
       .map(function(el) { return el.value; });
-    p.set(name, checked.join(','));
+    formData[name] = checked.join(',');
   });
 
-  var outputURL = 'https://carb-loader.qt2systems.com/qt2_carbload_output.html';
-  window.location.href = outputURL + '?' + p.toString();
+  // Show submitting state
+  var btn = document.querySelector('.submit-btn');
+  btn.textContent = 'Generating your plan…';
+  btn.disabled = true;
+
+  // POST to Worker /session — get plan token back
+  fetch(WORKER_URL + '/session', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      purchase_token: window._purchaseToken,
+      form_data: formData
+    })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    if (data.error) {
+      btn.textContent = 'Generate My Carb-Loading Plan';
+      btn.disabled = false;
+      alert("Error: " + data.error);
+      return;
+    }
+    // Redirect to output page with plan token
+    window.location.href = 'https://carb-loading.qt2systems.com/qt2_carbload_output.html?plan_token=' + data.plan_token;
+  })
+  .catch(function(err) {
+    btn.textContent = 'Generate My Carb-Loading Plan';
+    btn.disabled = false;
+    alert("Something went wrong. Please try again.");
+  });
 });
 </script>
 </body>
