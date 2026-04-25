@@ -1,0 +1,1339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>QT2 Systems — Carbohydrate Loading Plan</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #003c6f;
+  --bg2: #00305a;
+  --card: rgba(255,255,255,0.07);
+  --border: rgba(255,255,255,0.12);
+  --border2: rgba(255,255,255,0.07);
+  --accent1: #204e99;
+  --white: #ffffff;
+  --muted: rgba(255,255,255,0.5);
+  --muted2: rgba(255,255,255,0.35);
+  --muted3: rgba(255,255,255,0.65);
+  --badge: rgba(255,255,255,0.15);
+  --badge2: rgba(255,255,255,0.1);
+  --green: #6fcf97;
+  --green-bg: rgba(111,207,151,0.12);
+  --amber: #f2c94c;
+  --amber-bg: rgba(242,201,76,0.12);
+  --sub-bg: rgba(255,255,255,0.04);
+  --sub-border: rgba(255,255,255,0.08);
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--white);
+  min-height: 100vh;
+  padding: 0;
+}
+
+/* HEADER */
+.header {
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  padding: 1rem 2rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.header-logo { height: 40px; width: auto; }
+.header-text h1 { font-size: 16px; font-weight: 600; color: var(--white); }
+.header-text p { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+/* ATHLETE BAR */
+.athlete-bar {
+  background: var(--accent1);
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.athlete-name { font-size: 15px; font-weight: 600; }
+.athlete-meta { font-size: 11px; color: rgba(255,255,255,0.75); margin-top: 3px; }
+.athlete-right { text-align: right; font-size: 11px; color: rgba(255,255,255,0.75); }
+.athlete-right strong { display: block; font-size: 13px; color: var(--white); font-weight: 600; }
+
+/* HOW TO USE */
+.how-to-wrap {
+  background: rgba(255,255,255,0.04);
+  border-bottom: 1px solid var(--border);
+  padding: 1.25rem 2rem;
+}
+.how-to-inner { max-width: 780px; margin: 0 auto; }
+.how-to-title {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--muted);
+  margin-bottom: 0.875rem;
+}
+.how-to-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+.how-to-item {
+  display: flex; gap: 0.625rem; align-items: flex-start;
+}
+.how-to-num {
+  flex-shrink: 0;
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: var(--accent1);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 700; color: var(--white);
+  margin-top: 1px;
+}
+.how-to-text {
+  font-size: 11.5px; color: var(--muted3); line-height: 1.55;
+}
+.how-to-text strong { color: var(--white); font-weight: 600; }
+
+/* PAGE */
+.page { max-width: 780px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+
+/* SECTION LABEL */
+.section-label {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--muted);
+  margin: 2rem 0 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border2);
+}
+
+/* DAY HEADER */
+.day-header {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;
+}
+.day-title { font-size: 15px; font-weight: 600; }
+.day-date { font-size: 11px; color: var(--muted); margin-top: 3px; }
+
+/* MEAL CARD */
+.meal-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  margin-bottom: 1rem;
+  overflow: hidden;
+}
+.meal-card-header {
+  padding: 0.875rem 1.25rem;
+  border-bottom: 1px solid var(--border2);
+  display: flex; justify-content: space-between; align-items: center;
+}
+.meal-name { font-size: 14px; font-weight: 600; }
+.meal-timing {
+  font-size: 11px; color: var(--muted3);
+  background: var(--badge); padding: 3px 10px; border-radius: 20px;
+}
+
+/* FOOD ITEM */
+.food-item { padding: 0.75rem 1.25rem; border-bottom: 1px solid var(--border2); }
+.food-item:last-child { border-bottom: none; }
+.food-primary { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; }
+.food-left { flex: 1; }
+.food-name { font-size: 14px; color: var(--white); font-weight: 500; }
+.food-portion { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.food-cho { font-size: 13px; font-weight: 600; color: var(--muted3); white-space: nowrap; }
+
+/* SUBSTITUTIONS */
+.food-subs {
+  margin-top: 0.5rem; padding-top: 0.5rem;
+  border-top: 1px solid var(--sub-border);
+  display: flex; flex-direction: column; gap: 4px;
+}
+.sub-item {
+  display: flex; justify-content: space-between; align-items: center;
+  background: var(--sub-bg); border-radius: 6px; padding: 4px 8px; gap: 0.75rem;
+}
+.sub-label { font-size: 11px; color: var(--muted2); font-style: italic; flex: 1; }
+.sub-label strong { color: var(--muted3); font-style: normal; font-weight: 500; }
+.sub-cho { font-size: 11px; color: var(--muted2); white-space: nowrap; }
+.sub-tag {
+  font-size: 9px; font-weight: 700; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--muted2);
+  background: var(--badge2); padding: 2px 6px; border-radius: 4px; white-space: nowrap;
+}
+
+/* MEAL TOTAL */
+.meal-total {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 0.75rem 1.25rem; background: rgba(0,0,0,0.15);
+  border-top: 1px solid var(--border2); font-size: 13px;
+}
+.meal-total-label { color: var(--muted); font-weight: 500; }
+.meal-total-val { font-weight: 700; color: var(--white); }
+
+/* MEAL NOTE */
+.meal-note {
+  margin: 0.5rem 1.25rem 0.875rem; font-size: 12px;
+  color: var(--amber); background: var(--amber-bg);
+  border-left: 3px solid var(--amber); border-radius: 4px; padding: 6px 10px;
+}
+
+/* TIMING PILL */
+.timing-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--green-bg); border: 1px solid rgba(111,207,151,0.3);
+  border-radius: 20px; padding: 4px 12px; font-size: 11px;
+  color: var(--green); font-weight: 600; margin-bottom: 0.75rem;
+}
+.timing-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
+
+/* LOADING */
+.loading-wrap {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; min-height: 60vh; gap: 1.5rem;
+}
+.loading-spinner {
+  width: 40px; height: 40px;
+  border: 3px solid rgba(255,255,255,0.15);
+  border-top-color: rgba(255,255,255,0.7);
+  border-radius: 50%; animation: spin 0.9s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text { font-size: 14px; color: var(--muted); }
+.loading-sub { font-size: 12px; color: var(--muted2); }
+
+/* ERROR */
+.error-wrap {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; min-height: 60vh; gap: 1rem;
+  text-align: center; padding: 2rem;
+}
+.error-title { font-size: 16px; font-weight: 600; color: #fc8181; }
+.error-msg { font-size: 13px; color: var(--muted); max-width: 420px; line-height: 1.6; }
+
+/* PDF BUTTON */
+.pdf-bar {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: var(--bg2); border-top: 1px solid var(--border);
+  padding: 1rem 1.5rem; display: flex; justify-content: center; z-index: 100;
+}
+.pdf-btn {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--white); color: var(--bg);
+  border: none; border-radius: 10px; padding: 0.75rem 2rem;
+  font-size: 14px; font-weight: 600; cursor: pointer;
+  font-family: inherit; transition: opacity 0.2s;
+}
+.pdf-btn:hover { opacity: 0.9; }
+
+/* MOBILE */
+@media (max-width: 600px) {
+  .header { padding: 1rem; }
+  .athlete-bar { padding: 0.875rem 1rem; }
+  .how-to-wrap { padding: 1rem; }
+  .how-to-grid { grid-template-columns: 1fr; }
+  .page { padding: 1.25rem 1rem 5rem; }
+}
+
+/* PRINT */
+/* Setting margin to 0 removes the browser chrome header/footer band entirely */
+@page {
+  margin: 0mm;
+  size: auto;
+}
+
+@media print {
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  body { background: #003c6f !important; color: #fff !important; padding: 0; margin: 0; }
+  /* Compensate for @page margin:0 with body padding */
+  .header { padding-left: 1.5cm !important; padding-right: 1.5cm !important; }
+  .athlete-bar { padding-left: 1.5cm !important; padding-right: 1.5cm !important; }
+  .how-to-wrap { padding-left: 1.5cm !important; padding-right: 1.5cm !important; }
+  .page { padding-left: 1.5cm !important; padding-right: 1.5cm !important; padding-top: 0.5cm !important; }
+  .pdf-bar { display: none !important; }
+
+  /* Header */
+  .header {
+    background: #00305a !important;
+    border-bottom: 1px solid rgba(255,255,255,0.12) !important;
+    padding: 0.75rem 1.5rem !important;
+  }
+  .header-logo { height: 32px !important; }
+  .header-text h1 { font-size: 14px !important; color: #fff !important; }
+  .header-text p { font-size: 10px !important; color: rgba(255,255,255,0.5) !important; }
+
+  /* Athlete bar */
+  .athlete-bar { background: #204e99 !important; padding: 0.75rem 1.5rem !important; }
+  .athlete-name { color: #fff !important; }
+  .athlete-meta { color: rgba(255,255,255,0.75) !important; }
+  .athlete-right { color: rgba(255,255,255,0.75) !important; }
+  .athlete-right strong { color: #fff !important; }
+
+  /* How-to */
+  .how-to-wrap {
+    background: rgba(255,255,255,0.04) !important;
+    border-bottom: 1px solid rgba(255,255,255,0.12) !important;
+    padding: 1rem 1.5rem !important;
+    page-break-inside: avoid; break-inside: avoid;
+  }
+  .how-to-title { color: rgba(255,255,255,0.5) !important; }
+  .how-to-text { color: rgba(255,255,255,0.65) !important; }
+  .how-to-text strong { color: #fff !important; }
+  .how-to-num { background: #204e99 !important; color: #fff !important; }
+
+  /* Page content */
+  .page { max-width: 100% !important; padding: 0 1.5rem !important; }
+  .section-label {
+    color: rgba(255,255,255,0.5) !important;
+    border-bottom: 1px solid rgba(255,255,255,0.12) !important;
+    padding-bottom: 4px; page-break-after: avoid; break-after: avoid;
+  }
+
+  /* Day header */
+  .day-header { page-break-after: avoid; break-after: avoid; }
+  .day-title { color: #fff !important; }
+  .day-date { color: rgba(255,255,255,0.5) !important; }
+
+  /* Meal cards */
+  .meal-card {
+    background: rgba(255,255,255,0.07) !important;
+    border: 0.5px solid rgba(255,255,255,0.15) !important;
+    border-radius: 10px !important;
+    margin-bottom: 0.625rem !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+  .meal-card-header { border-bottom: 0.5px solid rgba(255,255,255,0.07) !important; }
+  .meal-name { color: #fff !important; }
+  .meal-timing {
+    background: rgba(255,255,255,0.15) !important;
+    color: rgba(255,255,255,0.8) !important;
+  }
+
+  /* Food items */
+  .food-item { border-bottom: 0.5px solid rgba(255,255,255,0.07) !important; }
+  .food-name { color: #fff !important; }
+  .food-portion { color: rgba(255,255,255,0.5) !important; }
+  .food-cho { color: rgba(255,255,255,0.65) !important; }
+
+  /* Substitutions */
+  .food-subs { border-top: 0.5px solid rgba(255,255,255,0.08) !important; }
+  .sub-item { background: rgba(255,255,255,0.04) !important; }
+  .sub-tag {
+    color: rgba(255,255,255,0.35) !important;
+    background: rgba(255,255,255,0.08) !important;
+  }
+  .sub-label { color: rgba(255,255,255,0.35) !important; }
+  .sub-label strong { color: rgba(255,255,255,0.55) !important; }
+  .sub-cho { color: rgba(255,255,255,0.35) !important; }
+
+  /* Totals */
+  .meal-total {
+    background: rgba(0,0,0,0.15) !important;
+    border-top: 0.5px solid rgba(255,255,255,0.1) !important;
+  }
+  .meal-total-label { color: rgba(255,255,255,0.5) !important; }
+  .meal-total-val { color: #fff !important; font-weight: 700 !important; }
+
+  /* Notes */
+  .meal-note {
+    color: #f2c94c !important;
+    background: rgba(242,201,76,0.12) !important;
+    border-color: #f2c94c !important;
+  }
+
+  /* Timing pill */
+  .timing-pill {
+    background: rgba(111,207,151,0.12) !important;
+    border-color: rgba(111,207,151,0.3) !important;
+    color: #6fcf97 !important;
+  }
+  .timing-dot { background: #6fcf97 !important; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <img src="data:image/jpeg;base64,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" alt="QT2 Systems" class="header-logo" style="mix-blend-mode:screen;" />
+  <div class="header-text">
+    <h1>QT2 Systems</h1>
+    <p>Carbohydrate Loading Protocol</p>
+  </div>
+</div>
+
+<div id="athlete-bar-wrap"></div>
+
+<div class="how-to-wrap">
+  <div class="how-to-inner">
+    <div class="how-to-title">How to use your carbohydrate loading plan</div>
+    <div class="how-to-grid">
+      <div class="how-to-item">
+        <div class="how-to-num">1</div>
+        <div class="how-to-text"><strong>Follow the days in order.</strong> Start with two-days-before if included, then day before, then race morning. Each section is timed to top off your glycogen stores before the gun.</div>
+      </div>
+      <div class="how-to-item">
+        <div class="how-to-num">2</div>
+        <div class="how-to-text"><strong>Hit your totals, not just the foods.</strong> The carbohydrate number at the bottom of each meal is what matters. Use the "or" alternatives if you can't find an exact food — they're pre-calculated to match.</div>
+      </div>
+      <div class="how-to-item">
+        <div class="how-to-num">3</div>
+        <div class="how-to-text"><strong>Drink your sports drink.</strong> It's doing real work. Every meal includes a sports drink target. Sip it with your meal rather than all at once to keep your stomach happy.</div>
+      </div>
+      <div class="how-to-item">
+        <div class="how-to-num">4</div>
+        <div class="how-to-text"><strong>Keep fat and fiber low.</strong> This is not the time for salads, fried food, or heavy sauces. Low fiber, low fat, familiar foods only — your gut will thank you on race day.</div>
+      </div>
+      <div class="how-to-item">
+        <div class="how-to-num">5</div>
+        <div class="how-to-text"><strong>Race morning has two windows.</strong> Main meal 3 hours before start. Top-up 60 minutes out. Don't skip the top-up — it's the last chance to put fuel in the tank.</div>
+      </div>
+      <div class="how-to-item">
+        <div class="how-to-num">6</div>
+        <div class="how-to-text"><strong>You may gain 1–3 lbs.</strong> That's water binding to glycogen — it's a good sign. It will be gone by mile 3.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="main"></div>
+
+<div class="pdf-bar" id="pdf-bar" style="display:none;">
+  <button class="pdf-btn" id="save-pdf-btn" onclick="savePDF()">
+    <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
+      <rect x="2" y="1" width="10" height="13" rx="1.5" stroke="#003c6f" stroke-width="1.5"/>
+      <path d="M5 5h6M5 8h6M5 11h4" stroke="#003c6f" stroke-width="1.2" stroke-linecap="round"/>
+    </svg>
+    Save as PDF
+  </button>
+</div>
+
+<script>
+const WORKER_URL = "https://qt2-carb-loader-agent.jesse-477.workers.dev";
+
+// ── PARSE URL PARAMS ──
+function getParams() {
+  const p = new URLSearchParams(window.location.search);
+  const get = k => (p.get(k) || '').trim();
+  return {
+    athlete_name:        get('athlete_name'),
+    race_name:           get('race_name'),
+    race_type:           get('race_type'),
+    race_date:           get('race_date'),
+    race_start_time:     get('race_start_time'),
+    expected_finish_time: get('expected_finish_time'),
+    body_weight_lbs:     parseFloat(get('body_weight_lbs')) || 150,
+    cooking_situation:   get('cooking_situation') || 'restaurant',
+    gi_sensitivity:      get('gi_sensitivity') || 'normal',
+    dietary_restrictions: get('dietary_restrictions'),
+    foods_never_include: get('foods_never_include'),
+    additional_notes:    get('additional_notes'),
+    foods_breakfast:     get('foods_breakfast'),
+    foods_lunch_dinner:  get('foods_lunch_dinner'),
+    foods_snacks:        get('foods_snacks'),
+    foods_race_morning:  get('foods_race_morning'),
+  };
+}
+
+// ── CALCULATIONS ──
+function lbsToKg(lbs) { return Math.round((lbs / 2.20462) * 10) / 10; }
+
+function parseFinishTime(str) {
+  // Accept formats: "4:30", "4.5", "270" (minutes), "4 hours 30 minutes"
+  if (!str) return 4;
+  str = str.toString().trim();
+  const colonMatch = str.match(/^(\d+):(\d+)/);
+  if (colonMatch) return parseInt(colonMatch[1]) + parseInt(colonMatch[2]) / 60;
+  const hoursMatch = str.match(/(\d+\.?\d*)\s*h/i);
+  if (hoursMatch) return parseFloat(hoursMatch[1]);
+  const numMatch = str.match(/^(\d+\.?\d*)$/);
+  if (numMatch) {
+    const n = parseFloat(numMatch[1]);
+    return n > 24 ? n / 60 : n; // treat >24 as minutes
+  }
+  return 4;
+}
+
+function calcTargets(params) {
+  const kg = lbsToKg(params.body_weight_lbs);
+  const hours = parseFinishTime(params.expected_finish_time);
+
+  // Day before
+  const dayBefore = Math.round(8 * kg);
+
+  // Two days before
+  let twoDayPct = 0;
+  if (hours < 2) twoDayPct = 0;
+  else if (hours < 4) twoDayPct = 0.40;
+  else if (hours < 6) twoDayPct = 0.50;
+  else twoDayPct = 0.60;
+  const twoDay = twoDayPct > 0 ? Math.round(dayBefore * twoDayPct) : 0;
+
+  // Race morning
+  let rmGPerKg = 2;
+  if (hours < 2) rmGPerKg = 1.5;
+  else if (hours < 4) rmGPerKg = 2;
+  else if (hours < 6) rmGPerKg = 2.5;
+  else rmGPerKg = 3;
+  const raceMorning = Math.round(rmGPerKg * kg);
+
+  // Day before meal split
+  const breakfast = Math.round(dayBefore * 0.45);
+  const rem = dayBefore - breakfast;
+  const midAM    = Math.round(rem * 0.23);
+  const lunch    = Math.round(rem * 0.30);
+  const pmSnack  = Math.round(rem * 0.22);
+  const dinner   = rem - midAM - lunch - pmSnack;
+
+  // Two day split
+  const tdLunch  = twoDay > 0 ? Math.round(twoDay * 0.45) : 0;
+  const tdDinner = twoDay > 0 ? twoDay - tdLunch : 0;
+
+  // Race morning split — main meal 3hr out, top-up 1hr out
+  const rmMain   = Math.round(raceMorning * 0.75);
+  const rmTopup  = hours >= 2 ? raceMorning - rmMain : 0;
+
+  return { kg, hours, dayBefore, twoDay, breakfast, midAM, lunch, pmSnack, dinner,
+           tdLunch, tdDinner, raceMorning, rmMain, rmTopup };
+}
+
+// ── DATE HELPERS ──
+function formatDate(dateStr, offsetDays) {
+  if (!dateStr) return '';
+  try {
+    const d = new Date(dateStr + 'T12:00:00');
+    d.setDate(d.getDate() + offsetDays);
+    return d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+  } catch(e) { return ''; }
+}
+
+function calcRaceMorningTimes(startTimeStr, offsetMinutes) {
+  if (!startTimeStr) return '';
+  try {
+    const [h, m] = startTimeStr.split(':').map(Number);
+    const total = h * 60 + (m || 0) + offsetMinutes;
+    const hh = Math.floor(((total % 1440) + 1440) % 1440 / 60);
+    const mm = ((total % 60) + 60) % 60;
+    const ampm = hh >= 12 ? 'PM' : 'AM';
+    const hDisplay = hh % 12 || 12;
+    return `${hDisplay}:${mm.toString().padStart(2,'0')} ${ampm}`;
+  } catch(e) { return ''; }
+}
+
+// ── RENDER HELPERS ──
+function renderAthleteBar(p, t) {
+  const raceDateStr = formatDate(p.race_date, 0);
+  const hoursDisplay = t.hours % 1 === 0
+    ? t.hours + ':00'
+    : Math.floor(t.hours) + ':' + Math.round((t.hours % 1) * 60).toString().padStart(2,'0');
+  document.getElementById('athlete-bar-wrap').innerHTML = `
+    <div class="athlete-bar">
+      <div>
+        <div class="athlete-name">${p.athlete_name || 'Athlete'}</div>
+        <div class="athlete-meta">${p.race_name || 'Race'}${p.race_type ? ' · ' + p.race_type : ''}${raceDateStr ? ' · ' + raceDateStr : ''}</div>
+      </div>
+      <div class="athlete-right">
+        <strong>${p.body_weight_lbs} lbs</strong>
+        Expected finish: ${hoursDisplay}
+      </div>
+    </div>`;
+}
+
+function renderFoodItem(item) {
+  const subs = (item.substitutions || []).slice(0, 2);
+  return `
+    <div class="food-item">
+      <div class="food-primary">
+        <div class="food-left">
+          <div class="food-name">${item.food}</div>
+          <div class="food-portion">${item.portion}</div>
+        </div>
+        <div class="food-cho">${item.cho}g</div>
+      </div>
+      ${subs.length > 0 ? `
+        <div class="food-subs">
+          ${subs.map(s => `
+            <div class="sub-item">
+              <span class="sub-tag">or</span>
+              <span class="sub-label"><strong>${s.food}</strong> — ${s.portion}</span>
+              <span class="sub-cho">${s.cho}g</span>
+            </div>`).join('')}
+        </div>` : ''}
+    </div>`;
+}
+
+function renderMealCard(meal, timingLabel) {
+  return `
+    <div class="meal-card">
+      <div class="meal-card-header">
+        <span class="meal-name">${meal.name}</span>
+        ${timingLabel ? `<span class="meal-timing">${timingLabel}</span>` : ''}
+      </div>
+      ${(meal.items || []).map(renderFoodItem).join('')}
+      <div class="meal-total">
+        <span class="meal-total-label">Total</span>
+        <span class="meal-total-val">${meal.total}g CHO</span>
+      </div>
+      ${meal.note ? `<div class="meal-note">${meal.note}</div>` : ''}
+    </div>`;
+}
+
+function renderDay(label, dateStr, meals) {
+  return `
+    <div class="section-label">${label}</div>
+    <div class="day-header">
+      <div>
+        <div class="day-title">${label}</div>
+        ${dateStr ? `<div class="day-date">${dateStr}</div>` : ''}
+      </div>
+    </div>
+    ${meals.map(m => renderMealCard(m, null)).join('')}`;
+}
+
+function renderRaceMorning(plan, p, t) {
+  const raceDate = formatDate(p.race_date, 0);
+  let html = `<div class="section-label">Race Morning</div>
+    <div class="day-header">
+      <div>
+        <div class="day-title">Race Morning</div>
+        ${raceDate ? `<div class="day-date">${raceDate}</div>` : ''}
+      </div>
+    </div>`;
+
+  (plan.windows || []).forEach(w => {
+    const timeStr = p.race_start_time
+      ? calcRaceMorningTimes(p.race_start_time, w.minutes_before_start * -1)
+      : null;
+    const timingLabel = timeStr
+      ? `${timeStr} · ${Math.abs(w.minutes_before_start)} min before start`
+      : w.label;
+    html += `
+      <div style="margin-bottom:0.25rem;">
+        <div class="timing-pill">
+          <span class="timing-dot"></span>
+          ${timingLabel}
+        </div>
+      </div>
+      ${renderMealCard(w.meal, null)}`;
+  });
+  return html;
+}
+
+// ── CHO REFERENCE TABLE (sourced from USDA FoodData Central + manufacturer labels) ──
+const CHO_REFERENCE = `
+VERIFIED CHO REFERENCE TABLE — use ONLY these values. Never estimate or guess CHO from memory.
+For each food item, calculate portions using: units_needed = target_cho / cho_per_unit (round to nearest 0.5 unit).
+The "cho" field you return must equal units_used × cho_per_unit exactly.
+
+Food | Serving Unit | CHO per Unit
+Pancake (plain, medium 4-5") | 1 pancake | 15g
+Waffle (standard, frozen) | 1 waffle | 25g
+French toast | 1 slice | 19g
+White toast | 1 slice | 13g
+White bread | 1 slice | 13g
+Dinner roll (small) | 1 roll | 15g
+Plain white bread roll (large, 3 oz) | 1 roll | 38g
+Bagel (plain, standard ~98g) | 1 bagel | 48g
+English muffin | 1 muffin | 25g
+Pita bread (white, 6.5") | 1 pita | 33g
+Flour tortilla (10") | 1 tortilla | 36g
+Flour tortilla (6") | 1 tortilla | 15g
+Instant oatmeal packet (plain) | 1 packet | 27g
+Cream of wheat (cooked) | 1 cup | 28g
+Cream of rice (cooked) | 1 cup | 28g
+Corn flakes | 1 cup | 24g
+Rice Krispies | 1 cup | 24g
+Low-fat granola | 1/4 cup | 30g
+White rice (cooked, long-grain) | 1 cup | 45g
+White pasta (cooked) | 1 cup | 43g
+Microwaveable rice pouch | 1 pouch (8.8 oz) | 43g
+Instant mashed potatoes (prepared) | 1 serving | 24g
+Baked potato (medium) | 1 potato | 35g
+Mashed potatoes | 1 cup | 35g
+Hash browns (shredded) | 1 cup | 26g
+Home fries | 1 cup | 27g
+Banana (medium) | 1 banana | 27g
+Orange (medium) | 1 orange | 15g
+Applesauce cup (4 oz) | 1 container | 24g
+Raisins | 1/4 cup | 33g
+Dried mango | 1 oz | 24g
+Canned peaches in juice | 1/2 cup | 16g
+Apple juice | 1 oz | 3.5g
+Orange juice | 1 oz | 3.3g
+White grape juice | 1 oz | 4g
+Pretzels | 1 oz | 22g
+White pita chips | 1 oz | 18g
+Animal crackers | 1 oz | 22g
+Graham crackers | 1 full sheet | 11g
+Saltines | 5 crackers | 11g
+Rice cakes (plain) | 1 cake | 7g
+Fat-free fig newtons | 1 cookie | 11g
+Jelly beans | 1 oz | 26g
+Gummy bears / fruit snacks | 1 oz | 23g
+Jam / jelly | 1 tbsp | 13g
+Honey | 1 tbsp | 17g
+Maple syrup | 1 tbsp | 13g
+Canned soup with noodles | 1 can | 25g
+Clif Bar (original) | 1 bar | 45g
+Sports chews (Clif Shot Bloks) | 3 pieces | 24g
+Energy gel (standard, e.g. GU) | 1 gel | 22g
+Low-fat granola bar | 1 bar | 29g
+Sports Drink | 1 oz | 1.75g
+Low-fat chocolate milk | 8 oz | 26g
+`;
+
+// ── BUILD PROMPT ──
+function buildPrompt(p, t) {
+  const doTwoDay = t.twoDay > 0;
+  const doTopup  = t.rmTopup > 0;
+
+  const cookingDesc = {
+    restaurant: 'eating at restaurants — full menu available',
+    microwave: 'hotel room with microwave only — NO stovetop, NO pasta unless pre-cooked pouches',
+    no_cook: 'no cooking available — grocery store / room temperature foods only, NO pasta, NO hot foods'
+  }[p.cooking_situation] || 'eating at restaurants';
+
+  const approved = {
+    breakfast:    p.foods_breakfast    || 'any appropriate breakfast foods',
+    lunch_dinner: p.foods_lunch_dinner || 'any appropriate lunch/dinner foods',
+    snacks:       p.foods_snacks       || 'any appropriate snack foods',
+    race_morning: p.foods_race_morning || 'any appropriate race morning foods',
+  };
+
+  return `You are the nutrition team at QT2 Systems, an elite endurance coaching company. Generate a personalized carbohydrate loading plan and return ONLY valid JSON — no prose, no markdown, no explanation outside the JSON.
+
+ATHLETE PROFILE:
+- Body weight: ${p.body_weight_lbs} lbs (${t.kg} kg)
+- Expected race duration: ${t.hours.toFixed(1)} hours
+- Cooking situation: ${cookingDesc}
+- GI sensitivity: ${p.gi_sensitivity}
+- Dietary restrictions: ${p.dietary_restrictions || 'none'}
+- Foods to NEVER include: ${p.foods_never_include || 'none'}
+- Additional notes: ${p.additional_notes || 'none'}
+
+APPROVED FOODS — build the plan ONLY from foods that appear in BOTH the approved list below AND the CHO reference table. Do not introduce any food not on the athlete's approved list.
+- Approved breakfast foods: ${approved.breakfast}
+- Approved lunch/dinner foods: ${approved.lunch_dinner}
+- Approved snack foods: ${approved.snacks}
+- Approved race morning foods: ${approved.race_morning}
+
+${CHO_REFERENCE}
+
+PORTION CALCULATION — MANDATORY PROCESS:
+For every food item you include:
+1. Look up the food in the CHO reference table above to get cho_per_unit.
+2. Calculate units_needed = target_contribution / cho_per_unit. Round to nearest 0.5.
+3. Set cho = units_needed × cho_per_unit (exact math, no rounding of this final value).
+4. Set portion = units_needed + unit label (e.g. "3 pancakes", "2 oz", "1.5 cups").
+5. Never guess or estimate CHO values from memory. Only use the reference table.
+
+CHO TARGETS (do not reveal these numbers in the output — no math visible to athlete):
+${doTwoDay ? `- Two days before — Lunch: ${t.tdLunch}g, Dinner: ${t.tdDinner}g` : '- Two days before: NOT required for this athlete\'s race duration'}
+- Day before — Breakfast: ${t.breakfast}g, Mid-morning snack: ${t.midAM}g, Lunch: ${t.lunch}g, Afternoon snack: ${t.pmSnack}g, Dinner: ${t.dinner}g
+- Race morning — Main meal: ${t.rmMain}g${doTopup ? `, Top-up: ${t.rmTopup}g` : ''}
+
+FLUID RULES:
+1. Gatorade is ALWAYS the primary fluid in every meal. Use 1.75g CHO per oz exactly.
+2. Choose Gatorade size from: 8, 12, 16, 20, 24, 32 oz. Calculate CHO as oz × 1.75, rounded to nearest integer.
+3. Every meal must include Gatorade as the last item.
+4. Juice (apple or white grape) appears ONLY as a Gatorade substitution, never primary.
+5. For juice substitutions: apple juice = 3.5g/oz, white grape juice = 4g/oz.
+
+SUBSTITUTION RULES:
+1. Every food item must have up to 2 substitutions from the athlete's approved list using reference table values.
+2. Substitutions provide approximately the same CHO as the primary item (within 10%).
+3. Use the same mandatory calculation process for substitution portions.
+4. Gatorade substitution = juice at equivalent CHO oz.
+
+ACCURACY RULES:
+1. Every meal total must be within 5% of its CHO target.
+2. meal.total must exactly equal the sum of all item cho values — verify this before returning.
+3. Low fiber, low fat, low residue foods only.
+4. No foods the athlete hasn't approved.
+
+COOKING CONTEXT:
+- microwave or no_cook: NO pasta. Use rice pouches, oatmeal, bread, bagels, pretzels, applesauce.
+- restaurant: pasta is permitted if on approved list.
+
+OUTPUT — return ONLY valid JSON, no markdown fences:
+{
+  "two_day": ${doTwoDay ? `[
+    {
+      "name": "Lunch",
+      "target": ${t.tdLunch},
+      "total": 0,
+      "items": [
+        { "food": "food name", "portion": "X units", "cho": 0, "substitutions": [{ "food": "alt food", "portion": "X units", "cho": 0 }] }
+      ]
+    },
+    {
+      "name": "Dinner",
+      "target": ${t.tdDinner},
+      "total": 0,
+      "items": []
+    }
+  ]` : 'null'},
+  "day_before": [
+    { "name": "Breakfast", "target": ${t.breakfast}, "total": 0, "items": [] },
+    { "name": "Mid-morning snack", "target": ${t.midAM}, "total": 0, "items": [] },
+    { "name": "Lunch", "target": ${t.lunch}, "total": 0, "items": [] },
+    { "name": "Afternoon snack", "target": ${t.pmSnack}, "total": 0, "items": [] },
+    { "name": "Dinner", "target": ${t.dinner}, "total": 0, "items": [] }
+  ],
+  "race_morning": {
+    "windows": [
+      {
+        "label": "Main meal",
+        "minutes_before_start": 180,
+        "meal": { "name": "Race morning — main meal", "target": ${t.rmMain}, "total": 0, "items": [] }
+      }${doTopup ? `,
+      {
+        "label": "Top-up",
+        "minutes_before_start": 60,
+        "meal": { "name": "Race morning — top-up", "target": ${t.rmTopup}, "total": 0, "items": [] }
+      }` : ''}
+    ]
+  }
+}`;
+}
+
+// ── MAIN ──
+async function init() {
+  const params = getParams();
+
+  // Show loading
+  document.getElementById('main').innerHTML = `
+    <div class="loading-wrap">
+      <div class="loading-spinner"></div>
+      <div class="loading-text">Building your carbohydrate loading plan…</div>
+      <div class="loading-sub">This takes about 20 seconds</div>
+    </div>`;
+
+  const t = calcTargets(params);
+  renderAthleteBar(params, t);
+
+  try {
+    const prompt = buildPrompt(params, t);
+    const resp = await fetch(WORKER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const data = await resp.json();
+    const raw = data.content?.find(b => b.type === 'text')?.text || '';
+    const clean = raw.replace(/```json|```/g, '').trim();
+    const plan = JSON.parse(clean);
+
+    let html = '';
+
+    // Two days before
+    if (plan.two_day && plan.two_day.length > 0) {
+      const tdDate = formatDate(params.race_date, -2);
+      html += `<div class="section-label">Two Days Before the Race</div>
+        <div class="day-header"><div>
+          <div class="day-title">Two Days Before</div>
+          ${tdDate ? `<div class="day-date">${tdDate}</div>` : ''}
+        </div></div>`;
+      plan.two_day.forEach(m => { html += renderMealCard(m, null); });
+    }
+
+    // Day before
+    const dbDate = formatDate(params.race_date, -1);
+    html += `<div class="section-label">Day Before the Race</div>
+      <div class="day-header"><div>
+        <div class="day-title">Day Before</div>
+        ${dbDate ? `<div class="day-date">${dbDate}</div>` : ''}
+      </div></div>`;
+    plan.day_before.forEach(m => { html += renderMealCard(m, null); });
+
+    // Race morning
+    if (plan.race_morning) {
+      html += renderRaceMorning(plan.race_morning, params, t);
+    }
+
+    document.getElementById('main').innerHTML = `<div class="page">${html}</div>`;
+    document.getElementById('pdf-bar').style.display = 'flex';
+
+  } catch(err) {
+    console.error('Full error:', err);
+    document.getElementById('main').innerHTML = `
+      <div class="error-wrap">
+        <div class="error-title">Something went wrong</div>
+        <div class="error-msg">${err.message || 'Unknown error'}</div>
+        <div class="error-msg" style="margin-top:1rem;font-size:11px;color:rgba(255,255,255,0.3);">
+          Open browser DevTools (F12) → Console tab to see the full error details.<br><br>
+          Common cause: if you are opening this file directly from your computer (file://) 
+          the Cloudflare Worker may be blocking the request due to CORS. 
+          The file needs to be hosted on a domain (Shopify, GitHub Pages, etc.) to work in production.
+        </div>
+      </div>`;
+  }
+}
+
+// ── DEV MODE: inject test params if no URL params present ──
+if (!window.location.search) {
+  const test = new URLSearchParams({
+    athlete_name: 'Jesse Thomas',
+    race_name: 'IM 70.3 Western Mass',
+    race_type: 'Triathlon 70.3',
+    race_date: '2025-06-07',
+    race_start_time: '07:00',
+    expected_finish_time: '4:30',
+    body_weight_lbs: '168',
+    cooking_situation: 'restaurant',
+    gi_sensitivity: 'normal',
+    dietary_restrictions: '',
+    foods_never_include: '',
+    additional_notes: 'Staying in a hotel. Will eat out for all main meals. Store-bought snacks.',
+    foods_breakfast: 'Pancakes,Waffles,Hash browns,White rice,Bagel,Oatmeal',
+    foods_lunch_dinner: 'White rice,Pasta,Dinner rolls,Baked potato,Turkey sandwich on white bread',
+    foods_snacks: 'Pretzels,Fat-free fig newtons,Banana,Animal crackers,Applesauce cup',
+    foods_race_morning: 'Banana,Applesauce cup,White toast with honey,Gatorade',
+  });
+  window.history.replaceState({}, '', '?' + test.toString());
+}
+
+function savePDF() {
+  const btn = document.getElementById('save-pdf-btn');
+  btn.textContent = 'Generating…';
+  btn.disabled = true;
+
+  if (!window.jspdf || !window.jspdf.jsPDF) {
+    btn.textContent = 'PDF library not loaded';
+    btn.disabled = false;
+    return;
+  }
+
+  try {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    const W = 210, M = 14, cW = W - M * 2;
+    let y = M;
+
+    // ── COLOURS (all computed from dark-blue base) ──
+    const PAGE_BG    = [0,  60, 111];   // #003c6f
+    const HDR_BG     = [0,  48,  90];   // #00305a
+    const ACCENT     = [32, 78, 153];   // #204e99
+    const CARD_BG    = [10, 68, 118];   // rgba(255,255,255,0.07) on #003c6f
+    const CARD_DARK  = [0,  51,  94];   // rgba(0,0,0,0.15)
+    const BADGE_BG   = [51, 99, 143];   // rgba(255,255,255,0.15)
+    const DIVIDER    = [16, 72, 122];   // rgba(255,255,255,0.07)
+    const DIVIDER2   = [31, 84, 128];   // rgba(255,255,255,0.12)
+    const SUB_BG     = [6,  64, 113];   // rgba(255,255,255,0.04)
+    const WHITE      = [255,255,255];
+    const MUTED      = [128,158,184];   // rgba(255,255,255,0.5)
+    const MUTED2     = [115,147,175];   // rgba(255,255,255,0.45)
+    const MUTED3     = [166,196,219];   // rgba(255,255,255,0.65)
+    const MUTED4     = [89, 122,153];   // rgba(255,255,255,0.35)
+    const CHO_COL    = [166,196,219];
+    const GREEN      = [111,207,151];
+    const GREEN_BG   = [14, 55, 38];
+    const OR_TAG     = [89, 122,153];
+
+    const params = getParams();
+    const t      = calcTargets(params);
+
+    // ── HELPERS ──
+    const fillPage = () => {
+      doc.setFillColor(...PAGE_BG);
+      doc.rect(0, 0, 210, 297, 'F');
+    };
+    const newPage = () => { doc.addPage(); fillPage(); y = M; };
+    const check   = (need) => { if (y + need > 278) newPage(); };
+    const setFont = (style, size, color) => {
+      doc.setFont('helvetica', style);
+      doc.setFontSize(size);
+      doc.setTextColor(...color);
+    };
+
+    // ── PAGE 1 BG ──
+    fillPage();
+
+    // ── HEADER ──
+    doc.setFillColor(...HDR_BG);
+    doc.rect(0, 0, 210, 26, 'F');
+    doc.setFillColor(...ACCENT);
+    doc.rect(0, 26, 210, 1.5, 'F');
+
+    // Logo — draw via canvas to strip the black background
+    const logoEl = document.querySelector('.header-logo');
+    if (logoEl) {
+      try {
+        const cvs = document.createElement('canvas');
+        cvs.width = 200; cvs.height = 120;
+        const ctx2 = cvs.getContext('2d');
+        ctx2.drawImage(logoEl, 0, 0, 200, 120);
+        const imgData = ctx2.getImageData(0, 0, 200, 120);
+        const d = imgData.data;
+        // Make dark pixels transparent (black background removal)
+        for (let px = 0; px < d.length; px += 4) {
+          const r = d[px], g = d[px+1], b = d[px+2];
+          if (r < 40 && g < 40 && b < 40) d[px+3] = 0; // transparent
+        }
+        ctx2.putImageData(imgData, 0, 0);
+        doc.addImage(cvs.toDataURL('image/png'), 'PNG', M, 3, 22, 12);
+      } catch(e) {}
+    }
+
+    setFont('bold', 11, WHITE);
+    doc.text('QT2 Systems', M + 26, 10);
+    setFont('normal', 6.5, MUTED);
+    doc.text('Carbohydrate Loading Protocol', M + 26, 15);
+    y = 33;
+
+    // ── ATHLETE BAR ──
+    doc.setFillColor(...ACCENT);
+    doc.rect(0, y - 2, 210, 16, 'F');
+
+    const athleteName  = params.athlete_name || 'Athlete';
+    const raceName     = params.race_name    || 'Race';
+    const raceType     = params.race_type    ? ' · ' + params.race_type : '';
+    const raceDateDisp = params.race_date
+      ? ' · ' + new Date(params.race_date + 'T12:00:00').toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})
+      : '';
+    const hoursH = Math.floor(t.hours);
+    const hoursM = Math.round((t.hours % 1) * 60).toString().padStart(2,'0');
+    const finishDisp = hoursH + ':' + hoursM;
+
+    setFont('bold', 9, WHITE);
+    doc.text(athleteName, M, y + 4.5);
+    setFont('normal', 6, [200,220,245]);
+    doc.text(raceName + raceType + raceDateDisp, M, y + 9.5);
+    setFont('bold', 8, WHITE);
+    doc.text(params.body_weight_lbs + ' lbs', W - M, y + 4.5, { align: 'right' });
+    setFont('normal', 6, [200,220,245]);
+    doc.text('Expected finish: ' + finishDisp, W - M, y + 9.5, { align: 'right' });
+    y += 20;
+
+    // ── HOW TO USE ──
+    const howItems = [
+      ['Follow the days in order.', 'Start with two-days-before if included, then day before, then race morning.'],
+      ['Hit your totals, not just the foods.', 'The carbohydrate number at the bottom of each meal is what matters.'],
+      ['Drink your sports drink.', "It's doing real work. Sip it with your meal rather than all at once."],
+      ['Keep fat and fiber low.', 'Low fiber, low fat, familiar foods only — your gut will thank you.'],
+      ['Race morning has two windows.', 'Main meal 3 hrs before start. Top-up 60 min out.'],
+      ['You may gain 1–3 lbs.', "That's water binding to glycogen. It will be gone by mile 3."],
+    ];
+
+    // Section title
+    check(50);
+    setFont('bold', 6, MUTED);
+    doc.text('HOW TO USE YOUR CARBOHYDRATE LOADING PLAN', M, y + 3);
+    doc.setDrawColor(...DIVIDER2);
+    doc.setLineWidth(0.2);
+    doc.line(M, y + 4.5, M + cW, y + 4.5);
+    y += 7;
+
+    // 2-column grid — render row by row (2 items per row)
+    const col1X = M, col2X = M + cW / 2 + 2;
+    const colW  = cW / 2 - 4;
+    const circR = 3;
+    const ROW_H = 15; // fixed row height — enough for 2 lines of text
+
+    for (let row = 0; row < Math.ceil(howItems.length / 2); row++) {
+      const rowY = y;
+      [0, 1].forEach(col => {
+        const i = row * 2 + col;
+        if (i >= howItems.length) return;
+        const item = howItems[i];
+        const cx = col === 0 ? col1X : col2X;
+
+        // Circle number
+        doc.setFillColor(...ACCENT);
+        doc.circle(cx + circR, rowY + circR, circR, 'F');
+        setFont('bold', 5.5, WHITE);
+        doc.text(String(i + 1), cx + circR, rowY + circR + 1.1, { align: 'center' });
+
+        // Bold heading
+        setFont('bold', 6, WHITE);
+        doc.text(item[0], cx + circR * 2 + 2, rowY + 4.5);
+
+        // Body text — wrapped
+        setFont('normal', 5.5, MUTED3);
+        const wrapped = doc.splitTextToSize(item[1], colW - circR * 2 - 3);
+        wrapped.forEach((line, li) => {
+          doc.text(line, cx + circR * 2 + 2, rowY + 8.5 + li * 3.2);
+        });
+      });
+      y += ROW_H;
+    }
+
+    // Divider
+    doc.setDrawColor(...DIVIDER2);
+    doc.setLineWidth(0.3);
+    doc.line(M, y, M + cW, y);
+    y += 5;
+
+    // ── SECTION LABEL helper ──
+    function sectionLabel(txt) {
+      // Look ahead enough for: section label + day header + minimum first card
+      check(55);
+      setFont('bold', 6.5, MUTED);
+      doc.text(txt.toUpperCase(), M, y + 3);
+      doc.setDrawColor(...DIVIDER2);
+      doc.setLineWidth(0.15);
+      doc.line(M, y + 4.5, M + cW, y + 4.5);
+      y += 7;
+    }
+
+    // ── DAY HEADER helper ──
+    function dayHeader(title, dateStr) {
+      // Check ahead for header + minimum first card height so they never orphan
+      check(42);
+      setFont('bold', 9, WHITE);
+      doc.text(title, M, y + 5);
+      if (dateStr) {
+        setFont('normal', 6, MUTED);
+        doc.text(dateStr, M, y + 9.5);
+        y += 12;
+      } else {
+        y += 7;
+      }
+    }
+
+    // ── MEAL CARD helper ──
+    function drawMealCard(meal, timingLabel) {
+      // Estimate card height
+      const items    = meal.items || [];
+      const subCount = items.reduce((s, it) => s + Math.min((it.substitutions||[]).length, 2), 0);
+      const HDR_H    = 8;
+      const ITEM_H   = 10;
+      const SUB_H    = 5.5;
+      const TOT_H    = 6;
+      const NOTE_H   = meal.note ? 6 : 0;
+      const TIMING_H = timingLabel ? 8 : 0;
+      const cardH    = TIMING_H + HDR_H + items.length * ITEM_H + subCount * SUB_H + TOT_H + NOTE_H + 2;
+
+      check(cardH + 4);
+
+      // Timing pill above card
+      if (timingLabel) {
+        doc.setFillColor(...GREEN_BG);
+        const pillW = doc.getStringUnitWidth(timingLabel) * 6 / doc.internal.scaleFactor + 10;
+        doc.roundedRect(M, y, pillW, 6, 1, 1, 'F');
+        doc.setDrawColor(...GREEN);
+        doc.setLineWidth(0.3);
+        doc.roundedRect(M, y, pillW, 6, 1, 1, 'S');
+        // green dot
+        doc.setFillColor(...GREEN);
+        doc.circle(M + 3.5, y + 3, 1.2, 'F');
+        setFont('bold', 5.5, GREEN);
+        doc.text(timingLabel, M + 6, y + 3.8);
+        y += 8;
+      }
+
+      const cardY = y;
+      // Card background
+      doc.setFillColor(...CARD_BG);
+      doc.roundedRect(M, cardY, cW, cardH - TIMING_H - 2, 1.5, 1.5, 'F');
+
+      // Header
+      setFont('bold', 8, WHITE);
+      doc.text(meal.name || '', M + 3, cardY + 6);
+      if (timingLabel === null && meal.timing) {
+        const tb = meal.timing;
+        const tbW = doc.getStringUnitWidth(tb) * 6 / doc.internal.scaleFactor + 8;
+        doc.setFillColor(...BADGE_BG);
+        doc.roundedRect(W - M - 3 - tbW, cardY + 1.5, tbW, 5, 1, 1, 'F');
+        setFont('normal', 5.5, MUTED3);
+        doc.text(tb, W - M - 6 - tbW / 2, cardY + 5, { align: 'center' });
+      }
+
+      // Header divider
+      doc.setDrawColor(...DIVIDER2);
+      doc.setLineWidth(0.15);
+      doc.line(M, cardY + HDR_H, M + cW, cardY + HDR_H);
+
+      let iy = cardY + HDR_H;
+
+      // Items
+      items.forEach((item, ii) => {
+        if (ii > 0) {
+          doc.setDrawColor(...DIVIDER);
+          doc.setLineWidth(0.1);
+          doc.line(M, iy, M + cW, iy);
+        }
+
+        const itemY = iy;
+
+        // Food name (line 1)
+        setFont('bold', 6.5, WHITE);
+        doc.text(item.food || '', M + 3, itemY + 4.5);
+
+        // CHO — right-aligned on same line as food name
+        setFont('bold', 6.5, CHO_COL);
+        doc.text((item.cho || 0) + 'g', W - M - 3, itemY + 4.5, { align: 'right' });
+
+        // Portion (line 2, below food name)
+        setFont('normal', 5.5, MUTED);
+        doc.text(item.portion || '', M + 3, itemY + 8.5);
+
+        iy += ITEM_H;
+
+        // Substitutions
+        const subs = (item.substitutions || []).slice(0, 2);
+        subs.forEach((sub, si) => {
+          doc.setFillColor(...SUB_BG);
+          doc.rect(M + 3, iy, cW - 6, SUB_H, 'F');
+
+          // OR tag
+          const tagW = 7;
+          doc.setFillColor(...DIVIDER2);
+          doc.roundedRect(M + 4, iy + 1, tagW, 3, 0.5, 0.5, 'F');
+          setFont('bold', 4.5, OR_TAG);
+          doc.text('OR', M + 4 + tagW/2, iy + 2.9, { align: 'center' });
+
+          // Sub food + portion
+          setFont('normal', 5.5, MUTED2);
+          const subLabel = (sub.food || '') + ' — ' + (sub.portion || '');
+          const subLines = doc.splitTextToSize(subLabel, cW - 28);
+          doc.text(subLines[0], M + 4 + tagW + 2, iy + 3.2);
+
+          // Sub CHO
+          setFont('normal', 5.5, MUTED4);
+          doc.text((sub.cho || 0) + 'g', W - M - 5, iy + 3.2, { align: 'right' });
+
+          iy += SUB_H;
+        });
+      });
+
+      // Total row
+      doc.setFillColor(...CARD_DARK);
+      doc.rect(M, iy, cW, TOT_H, 'F');
+      doc.setDrawColor(...DIVIDER2);
+      doc.setLineWidth(0.15);
+      doc.line(M, iy, M + cW, iy);
+      setFont('normal', 6, MUTED);
+      doc.text('Total', M + 3, iy + 4.3);
+      setFont('bold', 6.5, WHITE);
+      doc.text((meal.total || 0) + 'g CHO', W - M - 3, iy + 4.3, { align: 'right' });
+      iy += TOT_H;
+
+      // Note
+      if (meal.note) {
+        doc.setFillColor(35, 28, 5);
+        doc.rect(M, iy, cW, NOTE_H, 'F');
+        doc.setFillColor(...[242, 201, 76]);
+        doc.rect(M, iy, 2, NOTE_H, 'F');
+        setFont('italic', 5.5, [242, 201, 76]);
+        const noteLines = doc.splitTextToSize(meal.note, cW - 10);
+        noteLines.slice(0, 2).forEach((l, li) => doc.text(l, M + 5, iy + 3 + li * 3));
+        iy += NOTE_H;
+      }
+
+      y = iy + 4;
+    }
+
+    // ── READ RENDERED DOM ──
+    const main = document.getElementById('main');
+
+    // Walk all section-label + day-header + meal-card + timing-pill elements in order
+    const page = main.querySelector('.page');
+    if (!page) {
+      btn.textContent = 'No plan loaded';
+      btn.disabled = false;
+      return;
+    }
+
+    let currentSection = '';
+    const children = Array.from(page.children);
+
+    children.forEach(el => {
+      // SECTION LABEL
+      if (el.classList.contains('section-label')) {
+        currentSection = el.textContent.trim();
+        sectionLabel(currentSection);
+        return;
+      }
+
+      // DAY HEADER
+      if (el.classList.contains('day-header')) {
+        const title   = el.querySelector('.day-title')?.textContent?.trim() || '';
+        const dateStr = el.querySelector('.day-date')?.textContent?.trim()  || '';
+        dayHeader(title, dateStr);
+        return;
+      }
+
+      // TIMING PILL (race morning)
+      if (el.querySelector && el.querySelector('.timing-pill')) {
+        // This is a wrapper div containing a timing pill + a meal-card
+        const pillText = el.querySelector('.timing-pill')?.textContent?.trim().replace(/\s+/g,' ') || '';
+        const cardEl   = el.querySelector('.meal-card');
+        if (cardEl) {
+          const meal = extractMealFromDOM(cardEl);
+          drawMealCard(meal, pillText);
+        }
+        return;
+      }
+
+      // MEAL CARD (standalone, no timing wrapper)
+      if (el.classList.contains('meal-card')) {
+        const meal = extractMealFromDOM(el);
+        drawMealCard(meal, null);
+        return;
+      }
+    });
+
+    // ── FOOTER on every page ──
+    const pages = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pages; i++) {
+      doc.setPage(i);
+      doc.setFillColor(...ACCENT);
+      doc.rect(0, 284, 210, 0.8, 'F');
+      doc.setFillColor(...HDR_BG);
+      doc.rect(0, 284.8, 210, 12.2, 'F');
+      setFont('normal', 6, MUTED);
+      doc.text('QT2 Systems  |  Carb-Loading Protocol', M, 291);
+      doc.text('Page ' + i + ' of ' + pages, W - M, 291, { align: 'right' });
+    }
+
+    const safeName = (params.athlete_name || 'Athlete').replace(/\s+/g, '_');
+    const today    = new Date().toISOString().split('T')[0];
+    doc.save('QT2_CarbLoad_' + safeName + '_' + today + '.pdf');
+
+  } catch(err) {
+    console.error('PDF error:', err);
+    alert('PDF generation failed: ' + err.message);
+  } finally {
+    const b = document.getElementById('save-pdf-btn');
+    if (b) {
+      b.innerHTML = `<svg width="15" height="15" viewBox="0 0 16 16" fill="none">
+        <rect x="2" y="1" width="10" height="13" rx="1.5" stroke="#003c6f" stroke-width="1.5"/>
+        <path d="M5 5h6M5 8h6M5 11h4" stroke="#003c6f" stroke-width="1.2" stroke-linecap="round"/>
+      </svg> Save as PDF`;
+      b.disabled = false;
+    }
+  }
+}
+
+// ── EXTRACT MEAL DATA FROM A RENDERED .meal-card DOM ELEMENT ──
+function extractMealFromDOM(cardEl) {
+  const name  = cardEl.querySelector('.meal-name')?.textContent?.trim() || '';
+  const total = parseInt(cardEl.querySelector('.meal-total-val')?.textContent) || 0;
+  const note  = cardEl.querySelector('.meal-note')?.textContent?.trim() || '';
+  const items = Array.from(cardEl.querySelectorAll('.food-item')).map(itemEl => {
+    const food    = itemEl.querySelector('.food-name')?.textContent?.trim() || '';
+    const portion = itemEl.querySelector('.food-portion')?.textContent?.trim() || '';
+    const cho     = parseInt(itemEl.querySelector('.food-cho')?.textContent) || 0;
+    const subs    = Array.from(itemEl.querySelectorAll('.sub-item')).map(subEl => {
+      const subLabel = subEl.querySelector('.sub-label');
+      const subFood  = subLabel?.querySelector('strong')?.textContent?.trim() || '';
+      const subPortion = (subLabel?.textContent || '').replace(subFood, '').replace('—','').trim();
+      const subCho   = parseInt(subEl.querySelector('.sub-cho')?.textContent) || 0;
+      return { food: subFood, portion: subPortion, cho: subCho };
+    });
+    return { food, portion, cho, substitutions: subs };
+  });
+  return { name, total, note, items };
+}
+
+init();
+</script>
+</body>
+</html>
