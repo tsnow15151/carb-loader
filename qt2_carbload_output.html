@@ -813,15 +813,43 @@ OUTPUT — return ONLY valid JSON, no markdown fences:
 
 // ── MAIN ──
 async function init() {
-  const params = getParams();
-
-  // Show loading
+  // Show loading immediately
   document.getElementById('main').innerHTML = `
     <div class="loading-wrap">
       <div class="loading-spinner"></div>
       <div class="loading-text">Building your carbohydrate loading plan…</div>
       <div class="loading-sub">This takes about 20 seconds</div>
     </div>`;
+
+  // Check for plan token — fetch params from KV session if present
+  let params;
+  const planToken = getPlanToken();
+
+  if (planToken) {
+    try {
+      const sessionResp = await fetch(WORKER_URL + '/session/' + planToken);
+      if (!sessionResp.ok) {
+        document.getElementById('main').innerHTML = `
+          <div class="error-wrap">
+            <div class="error-title">Link expired or invalid</div>
+            <div class="error-msg">This plan link has expired or has already been used. Please contact QT2 Systems if you need a new link.</div>
+          </div>`;
+        return;
+      }
+      const sessionData = await sessionResp.json();
+      params = sessionData.form_data;
+    } catch(err) {
+      document.getElementById('main').innerHTML = `
+        <div class="error-wrap">
+          <div class="error-title">Could not load plan</div>
+          <div class="error-msg">${err.message}</div>
+        </div>`;
+      return;
+    }
+  } else {
+    // Dev mode — use URL params directly
+    params = getParams();
+  }
 
   const t = calcTargets(params);
   renderAthleteBar(params, t);
@@ -886,8 +914,8 @@ async function init() {
   }
 }
 
-// ── DEV MODE: inject test params if no URL params present ──
-if (!window.location.search) {
+// ── DEV MODE: inject test params if no URL params and no plan token present ──
+if (!window.location.search && !getPlanToken()) {
   const test = new URLSearchParams({
     athlete_name: 'Jesse Thomas',
     race_name: 'IM 70.3 Western Mass',
