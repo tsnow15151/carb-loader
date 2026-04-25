@@ -461,52 +461,51 @@ select:invalid {
 <script>
 document.getElementById('intake-form').addEventListener('submit', function(e) {
   e.preventDefault();
-  const form = e.target;
+  var form = e.target;
+  var valid = true;
 
-  // Validate required fields
-  const required = form.querySelectorAll('[required]');
-  let valid = true;
-  required.forEach(el => {
+  // Validate text/number/select required fields
+  var required = form.querySelectorAll('input[required], select[required]');
+  required.forEach(function(el) {
     if (!el.value) { el.style.borderColor = 'rgba(252,129,129,0.6)'; valid = false; }
     else { el.style.borderColor = ''; }
   });
 
-  // Validate radio groups
-  ['cooking_situation', 'gi_sensitivity'].forEach(name => {
-    const checked = form.querySelector();
-    if (!checked) { valid = false; }
-  });
+  // Validate required radio groups
+  var cookingChecked = form.querySelector('input[name="cooking_situation"]:checked');
+  var giChecked      = form.querySelector('input[name="gi_sensitivity"]:checked');
+  if (!cookingChecked) valid = false;
+  if (!giChecked)      valid = false;
 
   if (!valid) {
     window.scrollTo({top: 0, behavior: 'smooth'});
     return;
   }
 
-  const p = new URLSearchParams();
+  var p = new URLSearchParams();
 
   // Text / number / select fields
-  ['athlete_name','race_name','race_type','race_date','race_start_time',
-   'expected_finish_time','body_weight_lbs','dietary_restrictions',
-   'foods_never_include','additional_notes'].forEach(name => {
-    const el = form.querySelector();
+  var textFields = ['athlete_name','race_name','race_type','race_date','race_start_time',
+    'expected_finish_time','body_weight_lbs','dietary_restrictions',
+    'foods_never_include','additional_notes'];
+  textFields.forEach(function(name) {
+    var el = form.querySelector('[name="' + name + '"]');
     if (el) p.set(name, el.value.trim());
   });
 
   // Radio fields
-  ['cooking_situation','gi_sensitivity'].forEach(name => {
-    const checked = form.querySelector();
-    p.set(name, checked ? checked.value : '');
-  });
+  p.set('cooking_situation', cookingChecked ? cookingChecked.value : '');
+  p.set('gi_sensitivity',    giChecked      ? giChecked.value      : '');
 
-  // Checkbox groups — collect checked values as comma-separated
-  ['foods_breakfast','foods_lunch_dinner','foods_snacks','foods_race_morning'].forEach(name => {
-    const checked = Array.from(form.querySelectorAll())
-      .map(el => el.value);
+  // Checkbox groups
+  var checkFields = ['foods_breakfast','foods_lunch_dinner','foods_snacks','foods_race_morning'];
+  checkFields.forEach(function(name) {
+    var checked = Array.from(form.querySelectorAll('input[name="' + name + '"]:checked'))
+      .map(function(el) { return el.value; });
     p.set(name, checked.join(','));
   });
 
-  // Redirect to output page
-  const outputURL = 'https://tsnow15151.github.io/carb-loader/qt2_carbload_output.html';
+  var outputURL = 'https://tsnow15151.github.io/carb-loader/qt2_carbload_output.html';
   window.location.href = outputURL + '?' + p.toString();
 });
 </script>
