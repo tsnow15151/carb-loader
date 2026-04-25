@@ -1275,11 +1275,15 @@ function savePDF() {
 
       // TIMING PILL (race morning)
       if (el.querySelector && el.querySelector('.timing-pill')) {
-        // This is a wrapper div containing a timing pill + a meal-card
         const pillText = el.querySelector('.timing-pill')?.textContent?.trim().replace(/\s+/g,' ') || '';
         const cardEl   = el.querySelector('.meal-card');
         if (cardEl) {
           const meal = extractMealFromDOM(cardEl);
+          // Pre-calculate total height of pill + card together and check BEFORE drawing either
+          const items    = meal.items || [];
+          const subCount = items.reduce((s, it) => s + Math.min((it.substitutions||[]).length, 2), 0);
+          const totalH   = 8 + 8 + items.length * 10 + subCount * 5.5 + 6 + (meal.note ? 6 : 0) + 6;
+          check(totalH);
           drawMealCard(meal, pillText);
         }
         return;
