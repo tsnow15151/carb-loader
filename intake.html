@@ -231,6 +231,31 @@ select:invalid {
   display: none;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+.select-all-btn {
+  background: none;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 6px;
+  color: rgba(255,255,255,0.5);
+  font-size: 10.5px;
+  font-weight: 600;
+  padding: 3px 10px;
+  cursor: pointer;
+  font-family: inherit;
+  margin-bottom: 8px;
+  transition: all 0.15s;
+  letter-spacing: 0.04em;
+}
+.select-all-btn:hover {
+  background: rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.8);
+  border-color: rgba(255,255,255,0.35);
+}
+.select-all-btn.all-selected {
+  background: rgba(32,78,153,0.4);
+  border-color: #204e99;
+  color: #fff;
+}
 </style>
 </head>
 <body>
@@ -375,6 +400,7 @@ select:invalid {
 
     <div class="field">
       <label class="field-label">Approved Breakfast Foods</label>
+      <button type="button" class="select-all-btn" id="select-all-breakfast" onclick="toggleSelectAll('foods_breakfast', 'select-all-breakfast')">Select All</button>
       <div class="check-grid">
         <label class="check-item"><input type="checkbox" name="foods_breakfast" value="Pancakes" /> Pancakes</label>
         <label class="check-item"><input type="checkbox" name="foods_breakfast" value="Waffles" /> Waffles</label>
@@ -397,6 +423,7 @@ select:invalid {
 
     <div class="field">
       <label class="field-label">Approved Lunch / Dinner Foods</label>
+      <button type="button" class="select-all-btn" id="select-all-lunch" onclick="toggleSelectAll('foods_lunch_dinner', 'select-all-lunch')">Select All</button>
       <div class="check-grid">
         <label class="check-item"><input type="checkbox" name="foods_lunch_dinner" value="White rice" /> White rice</label>
         <label class="check-item"><input type="checkbox" name="foods_lunch_dinner" value="Pasta (marinara)" /> Pasta (marinara)</label>
@@ -417,6 +444,7 @@ select:invalid {
 
     <div class="field">
       <label class="field-label">Approved Snack Foods</label>
+      <button type="button" class="select-all-btn" id="select-all-snacks" onclick="toggleSelectAll('foods_snacks', 'select-all-snacks')">Select All</button>
       <div class="check-grid">
         <label class="check-item"><input type="checkbox" name="foods_snacks" value="Pretzels" /> Pretzels</label>
         <label class="check-item"><input type="checkbox" name="foods_snacks" value="Fat-free fig newtons" /> Fat-free fig newtons</label>
@@ -437,6 +465,7 @@ select:invalid {
 
     <div class="field">
       <label class="field-label">Approved Race Morning Foods</label>
+      <button type="button" class="select-all-btn" id="select-all-race" onclick="toggleSelectAll('foods_race_morning', 'select-all-race')">Select All</button>
       <div class="check-grid">
         <label class="check-item"><input type="checkbox" name="foods_race_morning" value="Applesauce cup" /> Applesauce cup</label>
         <label class="check-item"><input type="checkbox" name="foods_race_morning" value="Banana" /> Banana</label>
@@ -473,6 +502,39 @@ select:invalid {
 </div>
 
 <script>
+function toggleSelectAll(groupName, btnId) {
+  var checkboxes = document.querySelectorAll('input[name="' + groupName + '"]');
+  var btn = document.getElementById(btnId);
+  var allChecked = Array.from(checkboxes).every(function(cb) { return cb.checked; });
+  checkboxes.forEach(function(cb) { cb.checked = !allChecked; });
+  if (!allChecked) {
+    btn.textContent = 'Deselect All';
+    btn.classList.add('all-selected');
+  } else {
+    btn.textContent = 'Select All';
+    btn.classList.remove('all-selected');
+  }
+}
+
+document.addEventListener('change', function(e) {
+  if (e.target.type !== 'checkbox') return;
+  var btnMap = {
+    'foods_breakfast':    'select-all-breakfast',
+    'foods_lunch_dinner': 'select-all-lunch',
+    'foods_snacks':       'select-all-snacks',
+    'foods_race_morning': 'select-all-race',
+  };
+  var btnId = btnMap[e.target.name];
+  if (!btnId) return;
+  var btn = document.getElementById(btnId);
+  if (!btn) return;
+  var checkboxes = document.querySelectorAll('input[name="' + e.target.name + '"]');
+  var allChecked = Array.from(checkboxes).every(function(cb) { return cb.checked; });
+  btn.textContent = allChecked ? 'Deselect All' : 'Select All';
+  if (allChecked) btn.classList.add('all-selected');
+  else btn.classList.remove('all-selected');
+});
+
 var WORKER_URL = "https://qt2-carb-loader-agent.jesse-477.workers.dev";
 
 // ── On load: validate purchase token ──
