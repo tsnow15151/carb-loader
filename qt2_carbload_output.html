@@ -945,6 +945,25 @@ async function init() {
     document.getElementById('main').innerHTML = `<div class="page">${html}</div>`;
     document.getElementById('pdf-bar').style.display = 'flex';
 
+    // Send completed plan back to Worker for storage + race-week email scheduling
+    if (planToken) {
+      try {
+        await fetch(WORKER_URL + '/store-plan', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            plan_token: planToken,
+            plan: plan,
+            params: params,
+            targets: t,
+          })
+        });
+      } catch(e) {
+        // Non-blocking — don't fail the page if this errors
+        console.warn('Plan storage/scheduling failed:', e.message);
+      }
+    }
+
   } catch(err) {
     console.error('Full error:', err);
     document.getElementById('main').innerHTML = `
@@ -1160,8 +1179,9 @@ function savePDF() {
 
     // ── SECTION LABEL helper ──
     function sectionLabel(txt) {
-      // Look ahead enough for: section label + day header + minimum first card
-      check(55);
+      // Look ahead enough for: section label + day header + timing pill + minimum first card
+      // Race morning needs extra space for timing pill (8mm) on top of normal lookahead
+      check(70);
       setFont('bold', 6.5, MUTED);
       doc.text(txt.toUpperCase(), M, y + 3);
       doc.setDrawColor(...DIVIDER2);
