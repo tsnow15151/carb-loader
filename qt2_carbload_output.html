@@ -954,7 +954,7 @@ async function init() {
           body: JSON.stringify({
             plan_token: planToken,
             plan: plan,
-            params: params,
+            params: { ...params, email: window._sessionEmail || '' },
             targets: t,
           })
         });
