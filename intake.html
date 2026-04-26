@@ -505,6 +505,8 @@ var WORKER_URL = "https://qt2-carb-loader-agent.jesse-477.workers.dev";
         }
         document.getElementById('intake-form').style.display = 'block';
         document.getElementById('token-checking').style.display = 'none';
+        // Store email from token record for later use
+        if (data.email) window._purchaseEmail = data.email;
       }
     })
     .catch(function(err) {
@@ -562,10 +564,17 @@ document.getElementById('intake-form').addEventListener('submit', function(e) {
     formData[name] = checked.join(',');
   });
 
+  // Capture email for form_data
+  var email_field_val = form.querySelector('[name="athlete_name"]') ? 
+    (window._purchaseEmail || '') : '';
+
   // Show submitting state
   var btn = document.querySelector('.submit-btn');
   btn.textContent = 'Generating your plan…';
   btn.disabled = true;
+
+  // Add email to form_data so it's available for race-week email scheduling
+  formData['email'] = email_field_val || '';
 
   // POST to Worker /session — get plan token back
   fetch(WORKER_URL + '/session', {
