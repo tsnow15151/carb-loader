@@ -647,13 +647,15 @@ function renderRaceMorning(plan, p, t) {
       ? `${timeStr} · ${Math.abs(w.minutes_before_start)} min before start`
       : w.label;
     html += `
-      <div style="margin-bottom:0.25rem;">
-        <div class="timing-pill">
-          <span class="timing-dot"></span>
-          ${timingLabel}
+      <div class="timing-pill-wrap">
+        <div style="margin-bottom:0.25rem;">
+          <div class="timing-pill">
+            <span class="timing-dot"></span>
+            ${timingLabel}
+          </div>
         </div>
-      </div>
-      ${renderMealCard(w.meal, null)}`;
+        ${renderMealCard(w.meal, null)}
+      </div>`;
   });
   return html;
 }
@@ -881,6 +883,7 @@ async function init() {
       const sessionData = await sessionResp.json();
       params = sessionData.form_data;
       window._sessionEmail = sessionData.email || '';
+      window._resolvedParams = params;
     } catch(err) {
       document.getElementById('main').innerHTML = `
         <div class="error-wrap">
@@ -892,6 +895,7 @@ async function init() {
   } else {
     // Dev mode — use URL params directly
     params = getParams();
+    window._resolvedParams = params;
   }
 
   const t = calcTargets(params);
@@ -1017,7 +1021,7 @@ function savePDF() {
     const GREEN_BG   = [14, 55, 38];
     const OR_TAG     = [89, 122,153];
 
-    const params = getParams();
+    const params = window._resolvedParams || getParams();
     const t      = calcTargets(params);
 
     // ── HELPERS ──
@@ -1344,9 +1348,10 @@ function savePDF() {
         return;
       }
 
-      // TIMING PILL (race morning)
-      if (el.querySelector && el.querySelector('.timing-pill')) {
-        const pillText = el.querySelector('.timing-pill')?.textContent?.trim().replace(/\s+/g,' ') || '';
+      // TIMING PILL (race morning) — wrapped in .timing-pill-wrap
+      if (el.classList.contains('timing-pill-wrap')) {
+        const pillEl   = el.querySelector('.timing-pill');
+        const pillText = pillEl ? pillEl.textContent.trim().replace(/\s+/g,' ') : '';
         const cardEl   = el.querySelector('.meal-card');
         if (cardEl) {
           const meal = extractMealFromDOM(cardEl);
