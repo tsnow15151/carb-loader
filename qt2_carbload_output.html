@@ -402,6 +402,21 @@ body {
 
 <div id="main"></div>
 
+<!-- EMAIL MODAL -->
+<div id="email-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:200;align-items:center;justify-content:center;">
+  <div style="background:#003c6f;border:1px solid rgba(255,255,255,0.15);border-radius:16px;padding:2rem;max-width:400px;width:90%;text-align:center;">
+    <div style="font-size:15px;font-weight:600;color:#fff;margin-bottom:8px;">Email me this plan</div>
+    <div style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:1.25rem;">We'll send a formatted copy to your inbox.</div>
+    <input id="email-input" type="email" placeholder="your@email.com"
+      style="width:100%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);border-radius:8px;padding:10px 12px;font-size:13px;color:#fff;font-family:inherit;outline:none;margin-bottom:1rem;box-sizing:border-box;" />
+    <div style="display:flex;gap:0.75rem;justify-content:center;">
+      <button onclick="closeEmailModal()" style="background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.7);border:none;border-radius:8px;padding:0.625rem 1.25rem;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;">Cancel</button>
+      <button id="email-send-btn" onclick="sendPlanEmail()" style="background:#204e99;color:#fff;border:none;border-radius:8px;padding:0.625rem 1.5rem;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">Send</button>
+    </div>
+    <div id="email-status" style="font-size:12px;margin-top:0.75rem;min-height:18px;"></div>
+  </div>
+</div>
+
 <div class="pdf-bar" id="pdf-bar" style="display:none;">
   <button class="pdf-btn" id="save-pdf-btn" onclick="savePDF()">
     <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
@@ -409,6 +424,13 @@ body {
       <path d="M5 5h6M5 8h6M5 11h4" stroke="#003c6f" stroke-width="1.2" stroke-linecap="round"/>
     </svg>
     Save as PDF
+  </button>
+  <button class="pdf-btn" id="email-plan-btn" onclick="openEmailModal()" style="background:rgba(255,255,255,0.12);color:#fff;margin-left:0.75rem;">
+    <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
+      <rect x="1" y="3" width="14" height="10" rx="1.5" stroke="#fff" stroke-width="1.5"/>
+      <path d="M1 5l7 5 7-5" stroke="#fff" stroke-width="1.2" stroke-linecap="round"/>
+    </svg>
+    Email me this plan
   </button>
 </div>
 
@@ -858,6 +880,7 @@ async function init() {
       }
       const sessionData = await sessionResp.json();
       params = sessionData.form_data;
+      window._sessionEmail = sessionData.email || '';
     } catch(err) {
       document.getElementById('main').innerHTML = `
         <div class="error-wrap">
@@ -1396,6 +1419,138 @@ function extractMealFromDOM(cardEl) {
     return { food, portion, cho, substitutions: subs };
   });
   return { name, total, note, items };
+}
+
+// ── EMAIL MODAL ──
+function openEmailModal() {
+  var modal = document.getElementById('email-modal');
+  modal.style.display = 'flex';
+  // Pre-fill email if available from session
+  var input = document.getElementById('email-input');
+  if (window._sessionEmail) input.value = window._sessionEmail;
+  input.focus();
+}
+
+function closeEmailModal() {
+  document.getElementById('email-modal').style.display = 'none';
+  document.getElementById('email-status').textContent = '';
+}
+
+async function sendPlanEmail() {
+  var email = document.getElementById('email-input').value.trim();
+  if (!email || !email.includes('@')) {
+    document.getElementById('email-status').style.color = '#fc8181';
+    document.getElementById('email-status').textContent = 'Please enter a valid email address.';
+    return;
+  }
+
+  var btn = document.getElementById('email-send-btn');
+  btn.textContent = 'Sending…';
+  btn.disabled = true;
+  document.getElementById('email-status').textContent = '';
+
+  // Collect rendered plan from DOM
+  var page = document.querySelector('.page');
+  if (!page) {
+    document.getElementById('email-status').style.color = '#fc8181';
+    document.getElementById('email-status').textContent = 'No plan loaded yet.';
+    btn.textContent = 'Send';
+    btn.disabled = false;
+    return;
+  }
+
+  // Gather athlete info
+  var athleteName = document.querySelector('.athlete-name')?.textContent?.trim() || 'Athlete';
+  var athleteMeta = document.querySelector('.athlete-meta')?.textContent?.trim() || '';
+
+  // Build plan HTML for email
+  var planSections = [];
+  var sections = page.querySelectorAll('.section-label, .day-header, .meal-card');
+  var emailPlanHTML = buildEmailPlanHTML(page);
+
+  try {
+    var resp = await fetch(WORKER_URL + '/email-plan', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        to: email,
+        athlete_name: athleteName,
+        athlete_meta: athleteMeta,
+        plan_html: emailPlanHTML,
+      })
+    });
+
+    var data = await resp.json();
+
+    if (data.ok) {
+      document.getElementById('email-status').style.color = '#6fcf97';
+      document.getElementById('email-status').textContent = 'Sent! Check your inbox.';
+      btn.textContent = 'Sent ✓';
+    } else {
+      throw new Error(data.error || 'Unknown error');
+    }
+  } catch(err) {
+    document.getElementById('email-status').style.color = '#fc8181';
+    document.getElementById('email-status').textContent = 'Error: ' + err.message;
+    btn.textContent = 'Send';
+    btn.disabled = false;
+  }
+}
+
+function buildEmailPlanHTML(page) {
+  var html = '';
+  var children = Array.from(page.children);
+
+  children.forEach(function(el) {
+    if (el.classList.contains('section-label')) {
+      html += '<h2 style="font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.5);border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:6px;margin:24px 0 12px;">' + el.textContent.trim() + '</h2>';
+    } else if (el.classList.contains('day-header')) {
+      var title = el.querySelector('.day-title')?.textContent?.trim() || '';
+      var date  = el.querySelector('.day-date')?.textContent?.trim() || '';
+      html += '<h3 style="font-size:16px;font-weight:700;color:#fff;margin:0 0 4px;">' + title + '</h3>';
+      if (date) html += '<p style="font-size:11px;color:rgba(255,255,255,0.5);margin:0 0 12px;">' + date + '</p>';
+    } else if (el.classList.contains('meal-card')) {
+      html += buildEmailMealCard(el);
+    } else {
+      // Timing pill wrapper with meal card inside
+      var pill = el.querySelector && el.querySelector('.timing-pill');
+      var card = el.querySelector && el.querySelector('.meal-card');
+      if (pill) {
+        html += '<div style="display:inline-flex;align-items:center;gap:6px;background:rgba(111,207,151,0.12);border:1px solid rgba(111,207,151,0.3);border-radius:20px;padding:4px 12px;font-size:11px;color:#6fcf97;font-weight:600;margin-bottom:8px;">● ' + pill.textContent.trim().replace(/\s+/g,' ') + '</div>';
+      }
+      if (card) html += buildEmailMealCard(card);
+    }
+  });
+
+  return html;
+}
+
+function buildEmailMealCard(cardEl) {
+  var name  = cardEl.querySelector('.meal-name')?.textContent?.trim() || '';
+  var total = cardEl.querySelector('.meal-total-val')?.textContent?.trim() || '';
+  var items = Array.from(cardEl.querySelectorAll('.food-item'));
+
+  var itemsHTML = items.map(function(item) {
+    var food    = item.querySelector('.food-name')?.textContent?.trim() || '';
+    var portion = item.querySelector('.food-portion')?.textContent?.trim() || '';
+    var cho     = item.querySelector('.food-cho')?.textContent?.trim() || '';
+    var subs    = Array.from(item.querySelectorAll('.sub-item')).map(function(sub) {
+      var label = sub.querySelector('.sub-label')?.textContent?.trim() || '';
+      var subcho = sub.querySelector('.sub-cho')?.textContent?.trim() || '';
+      return '<tr><td style="padding:3px 8px 3px 24px;font-size:11px;color:rgba(255,255,255,0.4);font-style:italic;">or ' + label + '</td><td style="padding:3px 8px;font-size:11px;color:rgba(255,255,255,0.4);text-align:right;">' + subcho + '</td></tr>';
+    }).join('');
+
+    return '<tr style="border-top:1px solid rgba(255,255,255,0.07);">' +
+      '<td style="padding:8px 8px 2px;font-size:13px;font-weight:600;color:#fff;">' + food + '<br><span style="font-size:11px;font-weight:400;color:rgba(255,255,255,0.5);">' + portion + '</span></td>' +
+      '<td style="padding:8px 8px 2px;font-size:13px;font-weight:600;color:rgba(166,196,219,1);text-align:right;vertical-align:top;">' + cho + '</td>' +
+      '</tr>' + subs;
+  }).join('');
+
+  return '<table style="width:100%;border-collapse:collapse;background:rgba(255,255,255,0.07);border-radius:10px;overflow:hidden;margin-bottom:12px;">' +
+    '<thead><tr style="background:rgba(255,255,255,0.05);"><td colspan="2" style="padding:10px 12px;font-size:14px;font-weight:600;color:#fff;">' + name + '</td></tr></thead>' +
+    '<tbody>' + itemsHTML +
+    '<tr style="background:rgba(0,0,0,0.15);border-top:1px solid rgba(255,255,255,0.1);"><td style="padding:8px 12px;font-size:12px;color:rgba(255,255,255,0.5);">Total</td><td style="padding:8px 12px;font-size:13px;font-weight:700;color:#fff;text-align:right;">' + total + '</td></tr>' +
+    '</tbody></table>';
 }
 
 init();
