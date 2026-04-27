@@ -463,10 +463,14 @@ function getParams() {
     dietary_restrictions: get('dietary_restrictions'),
     foods_never_include: get('foods_never_include'),
     additional_notes:    get('additional_notes'),
-    foods_breakfast:     get('foods_breakfast'),
-    foods_lunch_dinner:  get('foods_lunch_dinner'),
-    foods_snacks:        get('foods_snacks'),
-    foods_race_morning:  get('foods_race_morning'),
+    foods_breakfast:          get('foods_breakfast'),
+    foods_lunch_dinner:       get('foods_lunch_dinner'),
+    foods_snacks:             get('foods_snacks'),
+    foods_race_morning:       get('foods_race_morning'),
+    foods_breakfast_custom:   get('foods_breakfast_custom'),
+    foods_lunch_dinner_custom: get('foods_lunch_dinner_custom'),
+    foods_snacks_custom:      get('foods_snacks_custom'),
+    foods_race_morning_custom: get('foods_race_morning_custom'),
   };
 }
 
@@ -721,6 +725,7 @@ Energy gel (standard, e.g. GU) | 1 gel | 22g
 Low-fat granola bar | 1 bar | 29g
 Sports Drink | 1 oz | 1.75g
 Low-fat chocolate milk | 8 oz | 26g
+Baked Lays potato chips (1.125 oz bag) | 1 bag | 23g
 `;
 
 // ── BUILD PROMPT ──
@@ -756,15 +761,55 @@ ATHLETE PROFILE:
 - Expected race duration: ${t.hours.toFixed(1)} hours
 - Cooking situation: ${cookingDesc}
 - GI sensitivity: ${/very.?sensitive/i.test(p.gi_sensitivity) ? 'Very Sensitive' : /sensitive/i.test(p.gi_sensitivity) ? 'Sensitive' : 'Normal'}
-- Dietary restrictions: ${p.dietary_restrictions || 'none'} — STRICT: if any restriction is listed (e.g. gluten-free), every single food item and substitution must comply. Gluten-free means NO wheat, NO pasta, NO bread, NO bagels, NO pretzels, NO crackers unless certified GF.
-- Foods to NEVER include: ${p.foods_never_include || 'none'} — these foods must not appear anywhere in the plan, including substitutions.
-- Additional notes: ${p.additional_notes || 'none'}
+- Dietary restrictions: ${p.dietary_restrictions || 'none'}
+  *** DIETARY RESTRICTIONS ARE ABSOLUTE. They override approved food lists, cooking context, and all other rules. Apply to every single food item AND every substitution in the entire plan. ***
+  - gluten-free: NO wheat, NO pasta, NO regular bread, NO bagels, NO pretzels, NO animal crackers, NO graham crackers, NO fig newtons, NO regular crackers, NO regular oatmeal unless certified GF. Safe foods: white rice, rice cakes, potatoes, bananas, applesauce, certified GF products only.
+  - lactose intolerant: NO milk, NO cheese, NO yogurt. Whey protein is acceptable unless noted otherwise.
+  - vegetarian: NO meat, NO fish, NO poultry. Use eggs or protein shakes for protein.
 
-APPROVED FOODS — build the plan ONLY from foods that appear in BOTH the approved list below AND the CHO reference table. Do not introduce any food not on the athlete's approved list.
+- Foods to NEVER include: ${p.foods_never_include || 'none'} — absolute exclusion from every item and substitution.
+
+- Additional notes: ${p.additional_notes || 'none'}
+  *** CRITICAL: Treat additional notes as DIRECT MEAL PLANNING INSTRUCTIONS with the highest priority. ***
+  - If the athlete says they are bringing a specific food (e.g. "I am bringing gluten-free bread"), that food MUST become the primary carbohydrate source for the meals they specified. Build those meals around that food first, then fill remaining CHO targets with other approved items.
+  - If the athlete describes a specific eating situation (e.g. "I will eat dinners at restaurants, all other meals from the hotel"), honor that exactly — override the cooking situation selection if needed.
+  - If the athlete expresses a preference (e.g. "I prefer rice over pasta"), respect it throughout the entire plan.
+  - Do not ignore or deprioritize the additional notes. They represent the athlete's real-world constraints.
+
+APPROVED FOODS — build the plan ONLY from foods that appear in BOTH the approved list below AND the CHO reference table (or custom foods list). Do not introduce any food not on the athlete's approved list.
 - Approved breakfast foods: ${approved.breakfast}
 - Approved lunch/dinner foods: ${approved.lunch_dinner}
 - Approved snack foods: ${approved.snacks}
 - Approved race morning foods: ${approved.race_morning}
+
+CUSTOM FOODS — athlete-provided foods that may appear in the plan:
+${p.foods_breakfast_custom ? '- Custom breakfast foods: ' + p.foods_breakfast_custom : ''}
+${p.foods_lunch_dinner_custom ? '- Custom lunch/dinner foods: ' + p.foods_lunch_dinner_custom : ''}
+${p.foods_snacks_custom ? '- Custom snack foods: ' + p.foods_snacks_custom : ''}
+${p.foods_race_morning_custom ? '- Custom race morning foods: ' + p.foods_race_morning_custom : ''}
+
+CUSTOM FOOD RULES:
+1. Parse each custom food entry as: "food name, serving size, CHO per serving" (CHO is optional).
+2. If CHO is provided by athlete: use it exactly. Add item note: "CHO value provided by athlete — verify with nutrition label."
+3. If CHO is NOT provided: estimate it from your knowledge. Add item note: "CHO value estimated by QT2 Systems — verify with nutrition label before race week."
+4. If the custom food is an EXCELLENT carb-loading option (high CHO, low fiber, low fat, familiar): use it as a PRIMARY item in the appropriate meals.
+5. If the custom food is a SUB-OPTIMAL carb-loading option (higher fiber, fat, or GI risk): use it only as a substitution/alternative, never primary. Add item note: "Note: this may not be the optimal choice for carb-loading — use only if well-tolerated."
+6. Custom foods take priority over standard approved foods when the athlete has specifically provided them for a meal type.
+
+MEAL CONTEXT RULES — primary vs alternative placement:
+BREAKFAST PRIMARIES (use as lead items): Pancakes, waffles, French toast, oatmeal, cream of wheat, bagel, white toast, English muffin, instant oatmeal packets, cream of rice.
+BREAKFAST ALTERNATIVES ONLY (never primary): White rice, hash browns, microwaveable rice pouch.
+
+LUNCH/DINNER PRIMARIES:
+- If "Turkey sandwich on white bread" OR any sandwich/GF bread is in approved or custom foods → sandwich MUST be the primary item. Add item note: "Includes sufficient protein — no additional protein source needed for this meal." Suppress the protein rule (Rule 5) for this meal.
+- Pair sandwich meals with Baked Lays (1.125 oz bag, 23g CHO) as a secondary item if snacks are approved.
+- Otherwise primary: white rice, pasta, baked potato, dinner roll, teriyaki bowl, microwaveable rice pouch.
+- NEVER primary at lunch/dinner: oatmeal, banana, applesauce, pretzels, animal crackers.
+
+SNACK PRIMARIES: Pretzels, fig newtons, animal crackers, applesauce cup, banana, rice cakes, Baked Lays. Sports drink always last.
+
+RACE MORNING PRIMARIES: Oatmeal, cream of rice, white toast with honey, bagel with honey, banana, instant oatmeal packets.
+RACE MORNING ALTERNATIVES: White rice, cream of wheat.
 
 ${CHO_REFERENCE}
 
