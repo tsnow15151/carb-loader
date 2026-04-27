@@ -797,6 +797,8 @@ ACCURACY RULES:
 2. meal.total must exactly equal the sum of all item cho values — verify this before returning.
 3. Low fiber, low fat, low residue foods only.
 4. No foods the athlete hasn't approved.
+5. PROTEIN RULE: Every breakfast, lunch, and dinner must include a small protein source (0g CHO) as the final item. Use one of: scrambled eggs (2 eggs, 0g CHO), grilled chicken breast (4 oz, 0g CHO), canned tuna (3 oz, 0g CHO), turkey slices (3 oz, 0g CHO), whey protein shake (1 scoop, 0g CHO). Choose based on cooking situation — no eggs if microwave/no_cook. Set cho: 0. Do NOT include protein in snacks.
+6. RACE MORNING PROTEIN: Include a small whey protein shake (1 scoop, 0g CHO) as the final item in the race morning MAIN MEAL only — not the top-up. Only include if gi_sensitivity is Normal or Sensitive. Skip entirely if gi_sensitivity is Very Sensitive.
 
 COOKING CONTEXT (current athlete: ${cookingKey}):
 - microwave or no_cook: NO pasta. Use rice pouches, oatmeal, bread, bagels, pretzels, applesauce.
