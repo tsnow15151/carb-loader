@@ -355,6 +355,10 @@ select:invalid {
           Eating at restaurants — full menu available
         </label>
         <label class="radio-item">
+          <input type="radio" name="cooking_situation" value="full_kitchen" />
+          Full kitchen available (home, rental, or hotel suite)
+        </label>
+        <label class="radio-item">
           <input type="radio" name="cooking_situation" value="microwave" />
           Hotel room with microwave only (no stovetop)
         </label>
@@ -436,7 +440,6 @@ select:invalid {
         <label class="check-item"><input type="checkbox" name="foods_lunch_dinner" value="Cheese pizza" /> Cheese pizza</label>
         <label class="check-item"><input type="checkbox" name="foods_lunch_dinner" value="Canned soup" /> Canned soup</label>
         <label class="check-item"><input type="checkbox" name="foods_lunch_dinner" value="Microwaveable rice pouch" /> Microwaveable rice pouch</label>
-        <label class="check-item"><input type="checkbox" name="foods_lunch_dinner" value="Mac and cheese" /> Mac and cheese</label>
         <label class="check-item"><input type="checkbox" name="foods_lunch_dinner" value="Instant mashed potatoes" /> Instant mashed potatoes</label>
         <label class="check-item"><input type="checkbox" name="foods_lunch_dinner" value="White bread sandwich" /> White bread sandwich</label>
       </div>
@@ -533,6 +536,64 @@ document.addEventListener('change', function(e) {
   btn.textContent = allChecked ? 'Deselect All' : 'Select All';
   if (allChecked) btn.classList.add('all-selected');
   else btn.classList.remove('all-selected');
+});
+
+// ── COOKING SITUATION FOOD FILTERING ──
+var COOKING_FOODS = {
+  restaurant: null, // null = show all
+  full_kitchen: null, // null = show all
+  microwave: {
+    foods_breakfast:    ["Bagel", "White toast", "English muffin", "Instant oatmeal packets", "Microwaveable rice pouch", "Banana", "Applesauce cup", "Corn flakes", "Oatmeal", "White rice"],
+    foods_lunch_dinner: ["White rice", "Microwaveable rice pouch", "Baked potato", "White rolls", "Dinner roll", "Canned soup", "Instant mashed potatoes", "White bread sandwich", "Mashed potatoes"],
+    foods_snacks:       ["Pretzels", "Fat-free fig newtons", "Animal crackers", "Graham crackers", "Saltines", "Rice cakes", "Applesauce cup", "Banana", "White bread with honey", "Bagel with jam", "Low-fat granola bar", "Dried mango", "Gummy bears / fruit snacks", "Gatorade"],
+    foods_race_morning: ["Applesauce cup", "Banana", "Instant oatmeal", "White toast with honey", "Bagel with honey", "Rice cakes with honey", "Gatorade", "Apple juice", "White grape juice"]
+  },
+  no_cook: {
+    foods_breakfast:    ["Bagel", "White toast", "English muffin", "Banana", "Applesauce cup", "Corn flakes", "Instant oatmeal packets"],
+    foods_lunch_dinner: ["White bread sandwich", "White rolls", "Bagel", "Pretzels", "Rice cakes", "Applesauce cup", "Canned soup"],
+    foods_snacks:       ["Pretzels", "Fat-free fig newtons", "Animal crackers", "Graham crackers", "Saltines", "Rice cakes", "Applesauce cup", "Banana", "White bread with honey", "Bagel with jam", "Low-fat granola bar", "Dried mango", "Gummy bears / fruit snacks", "Gatorade"],
+    foods_race_morning: ["Applesauce cup", "Banana", "Instant oatmeal", "White toast with honey", "Bagel with honey", "Rice cakes with honey", "Gatorade", "Apple juice", "White grape juice"]
+  }
+};
+
+function filterFoodsByCooking(situation) {
+  var allowed = COOKING_FOODS[situation];
+  var groups = ['foods_breakfast', 'foods_lunch_dinner', 'foods_snacks', 'foods_race_morning'];
+  groups.forEach(function(group) {
+    var items = document.querySelectorAll('input[name="' + group + '"]');
+    items.forEach(function(cb) {
+      var label = cb.closest('.check-item');
+      if (!label) return;
+      if (!allowed || !allowed[group]) {
+        // Show all
+        label.style.display = '';
+        label.style.opacity = '1';
+      } else {
+        var show = allowed[group].indexOf(cb.value) !== -1;
+        label.style.display = show ? '' : 'none';
+        if (!show) cb.checked = false; // uncheck hidden items
+      }
+    });
+    // Update select-all button state after filtering
+    var btnMap = {
+      'foods_breakfast':    'select-all-breakfast',
+      'foods_lunch_dinner': 'select-all-lunch',
+      'foods_snacks':       'select-all-snacks',
+      'foods_race_morning': 'select-all-race',
+    };
+    var btn = document.getElementById(btnMap[group]);
+    if (btn) {
+      btn.textContent = 'Select All';
+      btn.classList.remove('all-selected');
+    }
+  });
+}
+
+// Listen for cooking situation changes
+document.addEventListener('change', function(e) {
+  if (e.target.name === 'cooking_situation') {
+    filterFoodsByCooking(e.target.value);
+  }
 });
 
 var WORKER_URL = "https://qt2-carb-loader-agent.jesse-477.workers.dev";
