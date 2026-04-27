@@ -731,13 +731,15 @@ function buildPrompt(p, t) {
   // Normalize cooking_situation — Jotform sends full option text, map to key
   let cookingKey = p.cooking_situation || 'restaurant';
   if (/microwave/i.test(cookingKey)) cookingKey = 'microwave';
-  else if (/no cook|no cooking|grocery|room temp/i.test(cookingKey)) cookingKey = 'no_cook';
+  else if (/no.?cook|grocery|room.?temp/i.test(cookingKey)) cookingKey = 'no_cook';
+  else if (/full.?kitchen|home|rental|suite/i.test(cookingKey)) cookingKey = 'full_kitchen';
   else if (/restaurant/i.test(cookingKey)) cookingKey = 'restaurant';
 
   const cookingDesc = {
-    restaurant: 'eating at restaurants — full menu available',
-    microwave:  'hotel room with microwave only — NO stovetop, NO pasta unless pre-cooked pouches',
-    no_cook:    'no cooking available — grocery store / room temperature foods only, NO pasta, NO hot foods'
+    restaurant:   'eating at restaurants — full menu available, ordering off a menu',
+    full_kitchen: 'full kitchen available (home, rental, or hotel suite) — can cook fresh pasta, fresh rice, eggs any style, grilled chicken or fish, oatmeal from scratch. Full control over portions.',
+    microwave:    'hotel room with microwave only — NO stovetop, NO fresh pasta. Use microwaveable rice pouches, instant oatmeal, bread, bagels, shelf-stable foods.',
+    no_cook:      'no cooking available — room temperature and shelf-stable foods only. NO pasta, NO hot foods, NO cooking required.'
   }[cookingKey] || 'eating at restaurants';
 
   const approved = {
@@ -801,8 +803,10 @@ ACCURACY RULES:
 6. RACE MORNING PROTEIN: Include a small whey protein shake (1 scoop, 0g CHO) as the final item in the race morning MAIN MEAL only — not the top-up. Only include if gi_sensitivity is Normal or Sensitive. Skip entirely if gi_sensitivity is Very Sensitive.
 
 COOKING CONTEXT (current athlete: ${cookingKey}):
-- microwave or no_cook: NO pasta. Use rice pouches, oatmeal, bread, bagels, pretzels, applesauce.
-- restaurant: pasta is permitted if on approved list.
+- full_kitchen: full cooking available. Fresh pasta, fresh rice cooked to exact portions, eggs any style, grilled chicken/fish, oatmeal from scratch. Most flexible option.
+- restaurant: pasta and all menu items permitted if on approved list.
+- microwave: NO pasta. Use microwaveable rice pouches, instant oatmeal, bread, bagels, pretzels, applesauce.
+- no_cook: NO pasta, NO hot foods. Room temperature and shelf-stable only.
 
 OUTPUT — return ONLY valid JSON, no markdown fences:
 {
