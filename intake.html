@@ -424,6 +424,11 @@ select:invalid {
         <label class="check-item"><input type="checkbox" name="foods_breakfast" value="Orange juice" /> Orange juice</label>
       </div>
     </div>
+      <div class="field" style="margin-top:0.5rem;">
+        <label class="field-label">Custom Breakfast Foods <span style="font-size:10px;font-weight:400;color:rgba(255,255,255,0.4);">— optional</span></label>
+        <div class="field-hint">Add foods not listed above. Format: <em>Food name, serving size, CHO per serving</em> — one per line. CHO is optional; leave blank and we'll estimate it.<br>Example: <em>GF bread, 2 slices, 24g</em> &nbsp;or&nbsp; <em>Rice Krispie treat, 1 bar</em></div>
+        <textarea name="foods_breakfast_custom" placeholder="GF bread, 2 slices, 24g&#10;Rice cake with honey, 1 cake&#10;Homemade energy ball, 1 ball, 30g" style="margin-top:6px;min-height:72px;font-size:12px;"></textarea>
+      </div>
 
     <div class="field">
       <label class="field-label">Approved Lunch / Dinner Foods</label>
@@ -444,6 +449,11 @@ select:invalid {
         <label class="check-item"><input type="checkbox" name="foods_lunch_dinner" value="White bread sandwich" /> White bread sandwich</label>
       </div>
     </div>
+      <div class="field" style="margin-top:0.5rem;">
+        <label class="field-label">Custom Lunch/Dinner Foods <span style="font-size:10px;font-weight:400;color:rgba(255,255,255,0.4);">— optional</span></label>
+        <div class="field-hint">Add foods not listed above. Format: <em>Food name, serving size, CHO per serving</em> — one per line. CHO is optional; leave blank and we'll estimate it.<br>Example: <em>GF bread, 2 slices, 24g</em> &nbsp;or&nbsp; <em>Rice Krispie treat, 1 bar</em></div>
+        <textarea name="foods_lunch_dinner_custom" placeholder="GF bread, 2 slices, 24g&#10;Rice cake with honey, 1 cake&#10;Homemade energy ball, 1 ball, 30g" style="margin-top:6px;min-height:72px;font-size:12px;"></textarea>
+      </div>
 
     <div class="field">
       <label class="field-label">Approved Snack Foods</label>
@@ -465,6 +475,11 @@ select:invalid {
         <label class="check-item"><input type="checkbox" name="foods_snacks" value="Gatorade" /> Gatorade</label>
       </div>
     </div>
+      <div class="field" style="margin-top:0.5rem;">
+        <label class="field-label">Custom Snack Foods <span style="font-size:10px;font-weight:400;color:rgba(255,255,255,0.4);">— optional</span></label>
+        <div class="field-hint">Add foods not listed above. Format: <em>Food name, serving size, CHO per serving</em> — one per line. CHO is optional; leave blank and we'll estimate it.<br>Example: <em>GF bread, 2 slices, 24g</em> &nbsp;or&nbsp; <em>Rice Krispie treat, 1 bar</em></div>
+        <textarea name="foods_snacks_custom" placeholder="GF bread, 2 slices, 24g&#10;Rice cake with honey, 1 cake&#10;Homemade energy ball, 1 ball, 30g" style="margin-top:6px;min-height:72px;font-size:12px;"></textarea>
+      </div>
 
     <div class="field">
       <label class="field-label">Approved Race Morning Foods</label>
@@ -483,6 +498,13 @@ select:invalid {
         <label class="check-item"><input type="checkbox" name="foods_race_morning" value="White grape juice" /> White grape juice</label>
       </div>
     </div>
+
+
+      <div class="field" style="margin-top:0.5rem;">
+        <label class="field-label">Custom Race Morning Foods <span style="font-size:10px;font-weight:400;color:rgba(255,255,255,0.4);">— optional</span></label>
+        <div class="field-hint">Add foods not listed above. Format: <em>Food name, serving size, CHO per serving</em> — one per line. CHO is optional; leave blank and we'll estimate it.<br>Example: <em>GF bread, 2 slices, 24g</em> &nbsp;or&nbsp; <em>Rice Krispie treat, 1 bar</em></div>
+        <textarea name="foods_race_morning_custom" placeholder="GF bread, 2 slices, 24g&#10;Rice cake with honey, 1 cake&#10;Homemade energy ball, 1 ball, 30g" style="margin-top:6px;min-height:72px;font-size:12px;"></textarea>
+      </div>
 
     <!-- ADDITIONAL NOTES -->
     <div class="section-label">Additional Notes</div>
@@ -545,13 +567,13 @@ var COOKING_FOODS = {
   microwave: {
     foods_breakfast:    ["Bagel", "White toast", "English muffin", "Instant oatmeal packets", "Microwaveable rice pouch", "Banana", "Applesauce cup", "Corn flakes", "Oatmeal", "White rice"],
     foods_lunch_dinner: ["White rice", "Microwaveable rice pouch", "Baked potato", "White rolls", "Dinner roll", "Canned soup", "Instant mashed potatoes", "White bread sandwich", "Mashed potatoes"],
-    foods_snacks:       ["Pretzels", "Fat-free fig newtons", "Animal crackers", "Graham crackers", "Saltines", "Rice cakes", "Applesauce cup", "Banana", "White bread with honey", "Bagel with jam", "Low-fat granola bar", "Dried mango", "Gummy bears / fruit snacks", "Gatorade"],
+    foods_snacks:       ["Pretzels", "Fat-free fig newtons", "Animal crackers", "Graham crackers", "Saltines", "Rice cakes", "Applesauce cup", "Banana", "White bread with honey", "Bagel with jam", "Low-fat granola bar", "Dried mango", "Gummy bears / fruit snacks", "Baked Lays (1.125 oz bag)", "Gatorade"],
     foods_race_morning: ["Applesauce cup", "Banana", "Instant oatmeal", "White toast with honey", "Bagel with honey", "Rice cakes with honey", "Gatorade", "Apple juice", "White grape juice"]
   },
   no_cook: {
     foods_breakfast:    ["Bagel", "White toast", "English muffin", "Banana", "Applesauce cup", "Corn flakes", "Instant oatmeal packets"],
     foods_lunch_dinner: ["White bread sandwich", "White rolls", "Bagel", "Pretzels", "Rice cakes", "Applesauce cup", "Canned soup"],
-    foods_snacks:       ["Pretzels", "Fat-free fig newtons", "Animal crackers", "Graham crackers", "Saltines", "Rice cakes", "Applesauce cup", "Banana", "White bread with honey", "Bagel with jam", "Low-fat granola bar", "Dried mango", "Gummy bears / fruit snacks", "Gatorade"],
+    foods_snacks:       ["Pretzels", "Fat-free fig newtons", "Animal crackers", "Graham crackers", "Saltines", "Rice cakes", "Applesauce cup", "Banana", "White bread with honey", "Bagel with jam", "Low-fat granola bar", "Dried mango", "Gummy bears / fruit snacks", "Baked Lays (1.125 oz bag)", "Gatorade"],
     foods_race_morning: ["Applesauce cup", "Banana", "Instant oatmeal", "White toast with honey", "Bagel with honey", "Rice cakes with honey", "Gatorade", "Apple juice", "White grape juice"]
   }
 };
@@ -671,7 +693,9 @@ document.getElementById('intake-form').addEventListener('submit', function(e) {
   var formData = {};
   var textFields = ['athlete_name','race_name','race_type','race_date','race_start_time',
     'expected_finish_time','body_weight_lbs','dietary_restrictions',
-    'foods_never_include','additional_notes'];
+    'foods_never_include','additional_notes',
+    'foods_breakfast_custom','foods_lunch_dinner_custom',
+    'foods_snacks_custom','foods_race_morning_custom'];
   textFields.forEach(function(name) {
     var el = form.querySelector('[name="' + name + '"]');
     if (el) formData[name] = el.value.trim();
