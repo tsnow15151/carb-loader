@@ -473,7 +473,7 @@ function renderRaceInfo() {
       field('Race Name', 'text', 'race_name', S.race_name, 'e.g. IM 70.3 Western Mass', true) +
     '</div>' +
     '<div class="field"><label class="field-label">Race Type <span class="req">*</span></label>' +
-    '<select id="race_type" onchange="save('race_type',this.value)">' +
+    '<select id="race_type" data-save="race_type" data-validate="1">' +
     '<option value="" disabled ' + (!S.race_type?'selected':'') + '>Select race type…</option>' +
     ['Triathlon (Full Ironman)','Triathlon 70.3','Olympic Triathlon','Marathon','Half Marathon','Gravel / Road Century (100+ miles)','Other'].map(function(o){
       return '<option value="'+o+'" '+(S.race_type===o?'selected':'')+'>'+o+'</option>';
@@ -485,18 +485,19 @@ function renderRaceInfo() {
     '</div>' +
     '<div class="row-2">' +
       '<div class="field"><label class="field-label">Expected Finish Time <span class="req">*</span></label>' +
-      '<input type="text" id="expected_finish_time" value="'+S.expected_finish_time+'" placeholder="e.g. 4:30 or 4.5" oninput="save('expected_finish_time',this.value)" />' +
+      '<input type="text" id="expected_finish_time" value="'+S.expected_finish_time+'" placeholder="e.g. 4:30 or 4.5" />' +
       '<div class="field-hint">Realistic finish — not your goal time</div></div>' +
       '<div class="field"><label class="field-label">Body Weight (lbs) <span class="req">*</span></label>' +
-      '<input type="number" id="body_weight_lbs" value="'+S.body_weight_lbs+'" placeholder="168" min="80" max="400" oninput="save('body_weight_lbs',this.value)" />' +
+      '<input type="number" id="body_weight_lbs" value="'+S.body_weight_lbs+'" placeholder="168" min="80" max="400" />' +
       '<div class="field-hint">Current weight — accuracy matters</div></div>' +
     '</div>';
   return card('Race Information', 'Tell us about your race so we can calculate your exact carbohydrate targets.', body, navButtons(null, null, 'btn-next-race', true));
 }
 
 function field(label, type, id, val, placeholder, required) {
-  return '<div class="field"><label class="field-label">' + label + (required?' <span class="req">*</span>':'') + '</label>' +
-    '<input type="' + type + '" id="' + id + '" value="' + (val||'') + '" placeholder="' + (placeholder||'') + '" oninput="save('' + id + '',this.value)" /></div>';
+  var req = required ? ' <span class="req">*</span>' : '';
+  return '<div class="field"><label class="field-label">' + label + req + '</label>' +
+    '<input type="' + type + '" id="' + id + '" data-save="' + id + '" value="' + escHtml(val||'') + '" placeholder="' + escHtml(placeholder||'') + '" /></div>';
 }
 
 function renderLogistics() {
@@ -545,7 +546,7 @@ function radioGroup(label, name, options, current, required, hint) {
     '<div class="radio-group">' +
     options.map(function(o) {
       return '<label class="radio-item"><input type="radio" name="' + name + '" value="' + o[0] + '" ' +
-        (current===o[0]?'checked':'') + ' onchange="save('' + name + '',this.value);validateStep(STEPS[S.step])" /> ' + o[1] + '</label>';
+        (current===o[0]?'checked':'') + ' data-save="' + name + '" data-validate="1" /> ' + o[1] + '</label>';
     }).join('') +
     '</div></div>';
 }
@@ -553,10 +554,10 @@ function radioGroup(label, name, options, current, required, hint) {
 function renderDietary() {
   var body =
     '<div class="field"><label class="field-label">Dietary Restrictions</label>' +
-    '<input type="text" id="dietary_restrictions" value="'+escHtml(S.dietary_restrictions)+'" placeholder="e.g. gluten-free, lactose intolerant, vegetarian — leave blank if none" oninput="save('dietary_restrictions',this.value)" />' +
+    '<input type="text" id="dietary_restrictions" value="'+escHtml(S.dietary_restrictions)+'" placeholder="e.g. gluten-free, lactose intolerant, vegetarian — leave blank if none" />' +
     '<div class="field-hint">These are applied as absolute constraints throughout your entire plan.</div></div>' +
     '<div class="field"><label class="field-label">Foods to NEVER Include</label>' +
-    '<input type="text" id="foods_never_include" value="'+escHtml(S.foods_never_include)+'" placeholder="e.g. no bananas, no oatmeal — leave blank if none" oninput="save('foods_never_include',this.value)" />' +
+    '<input type="text" id="foods_never_include" value="'+escHtml(S.foods_never_include)+'" placeholder="e.g. no bananas, no oatmeal — leave blank if none" />' +
     '<div class="field-hint">These foods will not appear anywhere in your plan, including alternatives.</div></div>';
   return card('Dietary Restrictions', 'Tell us about any foods you cannot or will not eat. These are hard constraints — not suggestions.', body, navButtons(null, null, 'btn-next-dietary', false));
 }
@@ -587,7 +588,7 @@ function renderFoods(section, title, stateKey) {
     '<div class="field" style="margin-top:1rem;">' +
     '<label class="field-label">Custom Foods <span style="font-size:10px;font-weight:400;color:rgba(255,255,255,0.35);">— optional</span></label>' +
     '<div class="field-hint">Format: <em>Food name, serving size, CHO per serving</em> — one per line. CHO optional (we\'ll estimate if blank).<br>Example: <em>GF bread, 2 slices, 24g</em></div>' +
-    '<textarea id="'+customKey+'" placeholder="GF bread, 2 slices, 24g&#10;Rice cake with honey, 1 cake" style="margin-top:6px;min-height:60px;" onchange="save(''+customKey+'',this.value)">'+escHtml(customVal)+'</textarea>' +
+    '<textarea id="'+customKey+'" placeholder="GF bread, 2 slices, 24g&#10;Rice cake with honey, 1 cake" style="margin-top:6px;min-height:60px;" data-save="'+customKey+'">'+escHtml(customVal)+'</textarea>' +
     '</div>';
 
   return card(title, null, body, navButtons(null, null, 'btn-next-foods', false));
@@ -598,7 +599,7 @@ function renderNotes() {
     '<div class="field">' +
     '<label class="field-label">Additional Notes</label>' +
     '<div class="field-hint" style="margin-bottom:6px;">Describe your cooking situation in detail, any past race nutrition experience, food preferences, or anything else that should influence your plan. If your situation is mixed (e.g. some restaurant meals, some hotel room), describe it here.</div>' +
-    '<textarea id="additional_notes" placeholder="e.g. I\'ll be eating all dinners and the day-before breakfast at restaurants. All other meals from a hotel room with a microwave.&#10;&#10;I\'ve had GI issues in past Ironman races — I want a conservative approach." style="min-height:100px;" onblur="analyzeNotes()" oninput="save('additional_notes',this.value)">'+escHtml(S.additional_notes)+'</textarea>' +
+    '<textarea id="additional_notes" data-save="additional_notes" placeholder="e.g. I will be eating all dinners at restaurants. All other meals from a hotel room with a microwave." style="min-height:100px;">'+escHtml(S.additional_notes)+'</textarea>' +
     '</div>' +
     '<div id="notes-analysis-area"></div>';
 
