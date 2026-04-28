@@ -460,6 +460,7 @@ function getParams() {
     body_weight_lbs:     parseFloat(get('body_weight_lbs')) || 150,
     cooking_situation:   get('cooking_situation') || 'restaurant',
     gi_sensitivity:      get('gi_sensitivity') || 'normal',
+    topup_format:        get('topup_format') || 'solid',
     dietary_restrictions: get('dietary_restrictions'),
     foods_never_include: get('foods_never_include'),
     additional_notes:    get('additional_notes'),
@@ -495,47 +496,142 @@ function parseFinishTime(str) {
   return 4;
 }
 
+function roundHalf(x) { return Math.round(x * 2) / 2; }
+
+function calcRaceMorningComponents(rmTotal, topupFormat) {
+  // Fixed components
+  const gel15 = 30; // always 1 gel
+  const topupGatorade = Math.round(16 * 1.75); // 16 oz = 28g
+  const topupFood = topupFormat === 'gel' ? 22 : 27; // gel=22g, solid=1 banana=27g
+  const topupTotal = topupGatorade + topupFood; // 50 or 55g
+
+  // Main meal = remainder
+  const mainTarget = rmTotal - gel15 - topupTotal;
+
+  // Find best Gatorade amount for main meal
+  let bestResult = null;
+  for (const oz of [24, 20, 16, 12]) {
+    const gCHO = Math.round(oz * 1.75);
+    const foodNeeded = mainTarget - gCHO;
+    if (foodNeeded < 0) continue;
+    const sauceCups = Math.min(3.0, roundHalf(foodNeeded / 24));
+    const sauceCHO  = sauceCups * 24;
+    const bananaGap = foodNeeded - sauceCHO;
+    const bananaCnt = Math.max(0, roundHalf(bananaGap / 27));
+    const bananaCHO = bananaCnt * 27;
+    const total     = gCHO + sauceCHO + bananaCHO;
+    const error     = Math.abs(total - mainTarget) / mainTarget;
+    if (!bestResult || error < bestResult.error) {
+      bestResult = { oz, gCHO, sauceCups, sauceCHO, bananaCnt, bananaCHO, total, error };
+    }
+    if (error <= 0.08) break;
+  }
+
+  return {
+    gel15,
+    topupGatoradeOz: 16,
+    topupGatoradeCHO: topupGatorade,
+    topupFood,
+    topupFormat,
+    topupTotal,
+    mainTarget,
+    mainGatoradeOz:  bestResult?.oz || 24,
+    mainGatoradeCHO: bestResult?.gCHO || 42,
+    mainSauceCups:   bestResult?.sauceCups || 2,
+    mainSauceCHO:    bestResult?.sauceCHO || 48,
+    mainBananaCnt:   bestResult?.bananaCnt || 1,
+    mainBananaCHO:   bestResult?.bananaCHO || 27,
+    mainTotal:       bestResult?.total || 0,
+  };
+}
+
+function calcMealComponents(mealTarget, mealType) {
+  // Base drink: 8 oz Gatorade always
+  const baseDrinkCHO = Math.round(8 * 1.75); // 14g
+  const remaining = mealTarget - baseDrinkCHO;
+
+  if (mealType === 'breakfast') {
+    // entrée 50%, topping 15%, side1 15%, side2 10%, balance drink 10%
+    return {
+      entree:   Math.round(remaining * 0.50),
+      topping:  Math.round(remaining * 0.15),
+      side1:    Math.round(remaining * 0.15),
+      side2:    Math.round(remaining * 0.10),
+      balDrink: Math.round(remaining * 0.10),
+      baseDrink: baseDrinkCHO,
+    };
+  } else if (mealType === 'lunch') {
+    // entrée 55%, side 20%, balance drink 25%
+    return {
+      entree:   Math.round(remaining * 0.55),
+      side1:    Math.round(remaining * 0.20),
+      balDrink: Math.round(remaining * 0.25),
+      baseDrink: baseDrinkCHO,
+    };
+  } else if (mealType === 'dinner') {
+    // entrée 55%, side1 20%, side2 20%, balance drink 5%
+    return {
+      entree:   Math.round(remaining * 0.55),
+      side1:    Math.round(remaining * 0.20),
+      side2:    Math.round(remaining * 0.20),
+      balDrink: Math.round(remaining * 0.05),
+      baseDrink: baseDrinkCHO,
+    };
+  }
+  return { entree: remaining, baseDrink: baseDrinkCHO };
+}
+
 function calcTargets(params) {
   const kg = lbsToKg(params.body_weight_lbs);
   const hours = parseFinishTime(params.expected_finish_time);
+  const topupFormat = params.topup_format || 'solid';
 
-  // Day before
+  // Day before — revised split 40/13/16/14/17
   const dayBefore = Math.round(8 * kg);
+  const breakfast = Math.round(dayBefore * 0.40);
+  const rem       = dayBefore - breakfast;
+  const midAM     = Math.round(rem * 0.228); // 13% of total
+  const lunch     = Math.round(rem * 0.281); // 16% of total
+  const pmSnack   = Math.round(rem * 0.246); // 14% of total
+  const dinner    = rem - midAM - lunch - pmSnack; // 17% of total
 
   // Two days before
   let twoDayPct = 0;
-  if (hours < 2) twoDayPct = 0;
+  if (hours < 2)      twoDayPct = 0;
   else if (hours < 4) twoDayPct = 0.40;
   else if (hours < 6) twoDayPct = 0.50;
-  else twoDayPct = 0.60;
-  const twoDay = twoDayPct > 0 ? Math.round(dayBefore * twoDayPct) : 0;
-
-  // Race morning
-  let rmGPerKg = 2;
-  if (hours < 2) rmGPerKg = 1.5;
-  else if (hours < 4) rmGPerKg = 2;
-  else if (hours < 6) rmGPerKg = 2.5;
-  else rmGPerKg = 3;
-  const raceMorning = Math.round(rmGPerKg * kg);
-
-  // Day before meal split
-  const breakfast = Math.round(dayBefore * 0.45);
-  const rem = dayBefore - breakfast;
-  const midAM    = Math.round(rem * 0.23);
-  const lunch    = Math.round(rem * 0.30);
-  const pmSnack  = Math.round(rem * 0.22);
-  const dinner   = rem - midAM - lunch - pmSnack;
-
-  // Two day split
+  else                twoDayPct = 0.60;
+  const twoDay   = twoDayPct > 0 ? Math.round(dayBefore * twoDayPct) : 0;
   const tdLunch  = twoDay > 0 ? Math.round(twoDay * 0.45) : 0;
   const tdDinner = twoDay > 0 ? twoDay - tdLunch : 0;
 
-  // Race morning split — main meal 3hr out, top-up 1hr out
-  const rmMain   = Math.round(raceMorning * 0.75);
-  const rmTopup  = hours >= 2 ? raceMorning - rmMain : 0;
+  // Race morning
+  let rmGPerKg = 2;
+  if (hours < 2)      rmGPerKg = 1.5;
+  else if (hours < 4) rmGPerKg = 2;
+  else if (hours < 6) rmGPerKg = 2.5;
+  else                rmGPerKg = 3;
+  const raceMorning = Math.round(rmGPerKg * kg);
+  const rm = calcRaceMorningComponents(raceMorning, topupFormat);
 
-  return { kg, hours, dayBefore, twoDay, breakfast, midAM, lunch, pmSnack, dinner,
-           tdLunch, tdDinner, raceMorning, rmMain, rmTopup };
+  // Meal component targets
+  const bfComp  = calcMealComponents(breakfast, 'breakfast');
+  const luComp  = calcMealComponents(lunch,     'lunch');
+  const diComp  = calcMealComponents(dinner,    'dinner');
+  const tdLuComp = twoDay > 0 ? calcMealComponents(tdLunch,  'lunch')  : null;
+  const tdDiComp = twoDay > 0 ? calcMealComponents(tdDinner, 'dinner') : null;
+
+  return {
+    kg, hours, dayBefore, twoDay,
+    breakfast, midAM, lunch, pmSnack, dinner,
+    tdLunch, tdDinner,
+    raceMorning,
+    rm,
+    bfComp, luComp, diComp, tdLuComp, tdDiComp,
+    // Legacy fields for jsPDF and email
+    rmMain:  rm.mainTotal,
+    rmTopup: rm.topupTotal,
+  };
 }
 
 // ── DATE HELPERS ──
@@ -652,6 +748,17 @@ function renderRaceMorning(plan, p, t) {
     const timingLabel = timeStr
       ? `${timeStr} · ${Math.abs(w.minutes_before_start)} min before start`
       : w.label;
+
+    // Filter out empty items (zero CHO with empty food name)
+    const meal = Object.assign({}, w.meal);
+    if (meal.items) {
+      meal.items = meal.items.filter(function(item) {
+        return !(item.cho === 0 && (!item.food || item.food === ''));
+      });
+      // Recalculate total from items
+      meal.total = meal.items.reduce(function(s, item) { return s + (item.cho || 0); }, 0);
+    }
+
     html += `
       <div class="timing-pill-wrap">
         <div style="margin-bottom:0.25rem;">
@@ -660,7 +767,7 @@ function renderRaceMorning(plan, p, t) {
             ${timingLabel}
           </div>
         </div>
-        ${renderMealCard(w.meal, null)}
+        ${renderMealCard(meal, null)}
       </div>`;
   });
   return html;
@@ -800,20 +907,41 @@ CUSTOM FOOD RULES:
 5. If the custom food is a SUB-OPTIMAL carb-loading option (higher fiber, fat, or GI risk): use it only as a substitution/alternative, never primary. Add item note: "Note: this may not be the optimal choice for carb-loading — use only if well-tolerated."
 6. Custom foods take priority over standard approved foods when the athlete has specifically provided them for a meal type.
 
-MEAL CONTEXT RULES — primary vs alternative placement:
-BREAKFAST PRIMARIES (use as lead items): Pancakes, waffles, French toast, oatmeal, cream of wheat, bagel, white toast, English muffin, instant oatmeal packets, cream of rice.
-BREAKFAST ALTERNATIVES ONLY (never primary): White rice, hash browns, microwaveable rice pouch.
+MEAL STRUCTURE AND COMPONENT RULES:
 
-LUNCH/DINNER PRIMARIES:
-- If "Turkey sandwich on white bread" OR any sandwich/GF bread is in approved or custom foods → sandwich MUST be the primary item. Add item note: "Includes sufficient protein — no additional protein source needed for this meal." Suppress the protein rule (Rule 5) for this meal.
-- Pair sandwich meals with Baked Lays (1.125 oz bag, 23g CHO) as a secondary item if snacks are approved.
-- Otherwise primary: white rice, pasta, baked potato, dinner roll, teriyaki bowl, microwaveable rice pouch.
-- NEVER primary at lunch/dinner: oatmeal, banana, applesauce, pretzels, animal crackers.
+BREAKFAST — 5 components: Entrée + Topping + Side 1 + Side 2 + Drink
+- Entrée (target CHO provided above): Pancakes, waffles, French toast, oatmeal, cream of wheat, bagel, white toast, English muffin, instant oatmeal packets, cream of rice. NEVER use rice, hash browns, or microwaveable rice pouch as breakfast entrée.
+- Topping (combined with entrée in display — show as one item e.g. "Pancakes with maple syrup"): Maple syrup (13g/tbsp), Honey (17g/tbsp), Jam (13g/tbsp). Always paired with entrée.
+- Side 1: Hash browns, banana, applesauce cup, fruit cup, toast, English muffin.
+- Side 2: White toast, applesauce cup, banana, fruit cup, oatmeal (if not used as entrée).
+- Drink: Base 8oz Gatorade + balance Gatorade. Combine into total oz. Show as single Gatorade item.
 
-SNACK PRIMARIES: Pretzels, fig newtons, animal crackers, applesauce cup, banana, rice cakes, Baked Lays. Sports drink always last.
+LUNCH — 3 components: Entrée + Side + Drink
+- Entrée: If sandwich is in approved foods → ALWAYS use sandwich as entrée. Name it properly: "Turkey sandwich on white bread" not "white bread + turkey." Combine bread + filling + topping (honey, jam if GF) into one named item. Add note: "Includes sufficient protein — no additional protein source needed." Suppress protein Rule 5 for this meal.
+- If no sandwich available: white rice, pasta, baked potato, teriyaki bowl, microwaveable rice pouch.
+- Side: Baked Lays (1.125 oz bag) if in approved snacks, otherwise pretzels, applesauce cup, banana, rice cakes.
+- Drink: Base 8oz + balance Gatorade combined into single item.
+- NEVER use oatmeal, applesauce, or banana as lunch entrée.
 
-RACE MORNING PRIMARIES: Oatmeal, cream of rice, white toast with honey, bagel with honey, banana, instant oatmeal packets.
-RACE MORNING ALTERNATIVES: White rice, cream of wheat.
+DINNER — 4 components: Entrée + Side 1 + Side 2 + Drink
+- Entrée: White rice, pasta, baked potato, dinner roll (if large enough), teriyaki bowl, microwaveable rice pouch.
+- Side 1: Dinner roll, white bread, applesauce cup, rice cakes.
+- Side 2: Applesauce cup, rice cakes, banana, pretzels.
+- Drink: Base 8oz + balance Gatorade combined.
+- If sandwich is in approved foods and dinner target is low (<90g) → sandwich may be used as entrée.
+
+SNACKS — flat list (no component structure):
+- 1-2 food items + Gatorade always last.
+- Primaries: Pretzels, fig newtons, animal crackers, applesauce cup, banana, rice cakes, Baked Lays.
+
+RACE MORNING — pre-calculated (use exact values from CHO TARGETS above, do not recalculate):
+- Main meal: use the exact items and amounts specified in CHO TARGETS. Do not substitute or change.
+- Top-up: use exact items specified. Do not change.
+- Final top-off: 1 gel, 30g, no drink. Note: "Take at the start line — no drink needed."
+
+SANDWICH NAMING RULE: Any meal containing bread + filling must be named as a sandwich. "Turkey sandwich on white bread" not "white bread slices." "GF bread sandwich with turkey" for GF athletes. Never list bread and filling as separate items when they form a sandwich.
+
+TOPPING DISPLAY RULE: Breakfast entrée + topping are ONE combined item. Display as "Pancakes with maple syrup — 8 pancakes + 2 tbsp" with combined CHO. Never list topping as a separate item.
 
 ${CHO_REFERENCE}
 
@@ -825,17 +953,32 @@ For every food item you include:
 4. Set portion = units_needed + unit label (e.g. "3 pancakes", "2 oz", "1.5 cups").
 5. Never guess or estimate CHO values from memory. Only use the reference table.
 
-CHO TARGETS (do not reveal these numbers in the output — no math visible to athlete):
-${doTwoDay ? `- Two days before — Lunch: ${t.tdLunch}g, Dinner: ${t.tdDinner}g` : '- Two days before: NOT required for this athlete\'s race duration'}
-- Day before — Breakfast: ${t.breakfast}g, Mid-morning snack: ${t.midAM}g, Lunch: ${t.lunch}g, Afternoon snack: ${t.pmSnack}g, Dinner: ${t.dinner}g
-- Race morning — Main meal: ${t.rmMain}g${doTopup ? `, Top-up: ${t.rmTopup}g` : ''}
+CHO TARGETS AND MEAL COMPONENTS (do not reveal gram targets or math to athlete):
+
+${doTwoDay ? `TWO DAYS BEFORE:
+- Lunch (${t.tdLunch}g): Entrée=${t.tdLuComp?.entree||0}g, Side=${t.tdLuComp?.side1||0}g, Balance drink=${t.tdLuComp?.balDrink||0}g, Base drink=14g
+- Dinner (${t.tdDinner}g): Entrée=${t.tdDiComp?.entree||0}g, Side1=${t.tdDiComp?.side1||0}g, Side2=${t.tdDiComp?.side2||0}g, Balance drink=${t.tdDiComp?.balDrink||0}g, Base drink=14g` : '- Two days before: NOT required for this athlete\'s race duration'}
+
+DAY BEFORE (${t.dayBefore}g total):
+- Breakfast (${t.breakfast}g): Entrée=${t.bfComp.entree}g, Topping=${t.bfComp.topping}g, Side1=${t.bfComp.side1}g, Side2=${t.bfComp.side2}g, Balance drink=${t.bfComp.balDrink}g, Base drink=14g
+- Mid-morning snack (${t.midAM}g): flat list
+- Lunch (${t.lunch}g): Entrée=${t.luComp.entree}g, Side=${t.luComp.side1}g, Balance drink=${t.luComp.balDrink}g, Base drink=14g
+- Afternoon snack (${t.pmSnack}g): flat list
+- Dinner (${t.dinner}g): Entrée=${t.diComp.entree}g, Side1=${t.diComp.side1}g, Side2=${t.diComp.side2}g, Balance drink=${t.diComp.balDrink}g, Base drink=14g
+
+RACE MORNING (${t.raceMorning}g total across all windows):
+- Main meal 3hrs out (target ~${t.rm.mainTarget}g): ${t.rm.mainGatoradeOz}oz Gatorade (${t.rm.mainGatoradeCHO}g) + ${t.rm.mainSauceCups} cups applesauce (${t.rm.mainSauceCHO}g) + ${t.rm.mainBananaCnt} banana(s) (${t.rm.mainBananaCHO}g) + whey protein shake (0g, skip if Very Sensitive or No Protein)
+- Top-up 60min out (${t.rm.topupTotal}g): ${t.rm.topupFormat === 'gel' ? '1 gel (22g) + 16oz Gatorade (28g)' : '1 banana (27g) + 16oz Gatorade (28g)'}
+- Final top-off 15min out (30g): 1 gel — always, no drink
 
 FLUID RULES:
 1. Gatorade is ALWAYS the primary fluid in every meal. Use 1.75g CHO per oz exactly.
-2. Choose Gatorade size from: 8, 12, 16, 20, 24, 32 oz. Calculate CHO as oz × 1.75, rounded to nearest integer.
-3. Every meal must include Gatorade as the last item.
-4. Juice (apple or white grape) appears ONLY as a Gatorade substitution, never primary.
-5. For juice substitutions: apple juice = 3.5g/oz, white grape juice = 4g/oz.
+2. Drink = base 8 oz (14g) + balance oz. Combine into single total oz amount. Show as one Gatorade item.
+3. Choose combined Gatorade from: 8, 12, 16, 20, 24 oz. Calculate CHO as oz × 1.75, rounded to nearest integer.
+4. Every meal must include Gatorade as the last item.
+5. Juice (apple or white grape) appears ONLY as a Gatorade substitution, never primary.
+6. For juice substitutions: apple juice = 3.5g/oz, white grape juice = 4g/oz.
+7. Race morning drink amounts are pre-calculated — use exactly as specified in CHO TARGETS.
 
 SUBSTITUTION RULES:
 1. Every food item must have up to 2 substitutions from the athlete's approved list using reference table values.
@@ -894,13 +1037,41 @@ OUTPUT — return ONLY valid JSON, no markdown fences:
       {
         "label": "Main meal",
         "minutes_before_start": 180,
-        "meal": { "name": "Race morning — main meal", "target": ${t.rmMain}, "total": 0, "items": [] }
-      }${doTopup ? `,
+        "meal": {
+          "name": "Race morning — main meal",
+          "target": ${t.rm.mainTarget},
+          "total": 0,
+          "items": [
+            { "food": "Applesauce cup (4 oz)", "portion": "${t.rm.mainSauceCups} cup${t.rm.mainSauceCups !== 1 ? 's' : ''}", "cho": ${t.rm.mainSauceCHO}, "substitutions": [] },
+            { "food": "${t.rm.mainBananaCnt > 0 ? (t.rm.mainBananaCnt === 0.5 ? 'Banana (medium)' : 'Banana (medium)') : ''}", "portion": "${t.rm.mainBananaCnt} banana${t.rm.mainBananaCnt !== 1 ? 's' : ''}", "cho": ${t.rm.mainBananaCHO}, "substitutions": [] },
+            { "food": "Gatorade", "portion": "${t.rm.mainGatoradeOz} oz", "cho": ${t.rm.mainGatoradeCHO}, "substitutions": [{"food":"Apple juice","portion":"${Math.round(t.rm.mainGatoradeOz*0.57)} oz","cho":${t.rm.mainGatoradeCHO}},{"food":"White grape juice","portion":"${Math.round(t.rm.mainGatoradeOz*0.5)} oz","cho":${t.rm.mainGatoradeCHO}}] }
+          ]
+        }
+      },
       {
         "label": "Top-up",
         "minutes_before_start": 60,
-        "meal": { "name": "Race morning — top-up", "target": ${t.rmTopup}, "total": 0, "items": [] }
-      }` : ''}
+        "meal": {
+          "name": "Race morning — top-up",
+          "target": ${t.rm.topupTotal},
+          "total": ${t.rm.topupTotal},
+          "items": ${t.rm.topupFormat === 'gel'
+            ? '[{"food":"Energy gel","portion":"1 gel","cho":22,"substitutions":[]},{"food":"Gatorade","portion":"16 oz","cho":28,"substitutions":[{"food":"Apple juice","portion":"8 oz","cho":28}]}]'
+            : '[{"food":"Banana (medium)","portion":"1 banana","cho":27,"substitutions":[]},{"food":"Gatorade","portion":"16 oz","cho":28,"substitutions":[{"food":"Apple juice","portion":"8 oz","cho":28}]}]'
+          }
+        }
+      },
+      {
+        "label": "Final top-off",
+        "minutes_before_start": 15,
+        "meal": {
+          "name": "Race morning — final top-off",
+          "target": 30,
+          "total": 30,
+          "note": "Take at the start line — no drink needed.",
+          "items": [{"food":"Energy gel","portion":"1 gel","cho":30,"substitutions":[]}]
+        }
+      }
     ]
   }
 }`;
@@ -1054,6 +1225,7 @@ if (!window.location.search && !getPlanToken()) {
     body_weight_lbs: '168',
     cooking_situation: 'restaurant',
     gi_sensitivity: 'normal',
+    topup_format: 'solid',
     dietary_restrictions: '',
     foods_never_include: '',
     additional_notes: 'Staying in a hotel. Will eat out for all main meals. Store-bought snacks.',
@@ -1104,6 +1276,8 @@ function savePDF() {
 
     const params = window._resolvedParams || getParams();
     const t      = calcTargets(params);
+    // Ensure topup_format is set
+    if (!params.topup_format) params.topup_format = 'solid';
 
     // ── HELPERS ──
     const fillPage = () => {
