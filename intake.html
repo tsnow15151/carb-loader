@@ -388,6 +388,21 @@ select:invalid {
       </div>
     </div>
 
+    <div class="field">
+      <label class="field-label">Preferred Protein Sources</label>
+      <div class="field-hint">We include a small protein source with main meals. Check all you're comfortable with. Leave blank to allow any. Check "No protein" to exclude protein entirely.</div>
+      <div class="check-grid" style="margin-top:6px;">
+        <label class="check-item"><input type="checkbox" name="preferred_proteins" value="Scrambled eggs" /> Scrambled eggs</label>
+        <label class="check-item"><input type="checkbox" name="preferred_proteins" value="Hard boiled eggs" /> Hard boiled eggs</label>
+        <label class="check-item"><input type="checkbox" name="preferred_proteins" value="Grilled chicken breast" /> Grilled chicken breast</label>
+        <label class="check-item"><input type="checkbox" name="preferred_proteins" value="Canned tuna" /> Canned tuna</label>
+        <label class="check-item"><input type="checkbox" name="preferred_proteins" value="Turkey slices" /> Turkey slices</label>
+        <label class="check-item"><input type="checkbox" name="preferred_proteins" value="Whey protein shake" /> Whey protein shake</label>
+        <label class="check-item"><input type="checkbox" name="preferred_proteins" value="Plant-based protein shake" /> Plant-based protein shake</label>
+        <label class="check-item"><input type="checkbox" name="preferred_proteins" value="No protein" id="no-protein-cb" /> No protein — carbs only</label>
+      </div>
+    </div>
+
     <div class="row-2">
       <div class="field">
         <label class="field-label" for="dietary_restrictions">Dietary Restrictions</label>
@@ -509,7 +524,23 @@ select:invalid {
     <!-- ADDITIONAL NOTES -->
     <div class="section-label">Additional Notes</div>
     <div class="field">
-      <textarea id="additional_notes" name="additional_notes" placeholder="Hotel situation, travel constraints, past race nutrition experience, anything else we should know…"></textarea>
+      <textarea id="additional_notes" name="additional_notes" placeholder="Hotel situation, travel constraints, past race nutrition experience, anything else we should know…" onblur="analyzeNotes()"></textarea>
+    </div>
+
+    <!-- NOTES ANALYSIS PANEL -->
+    <div id="notes-analysis-wrap" style="display:none;">
+      <div id="notes-analyzing" style="display:none;font-size:12px;color:rgba(255,255,255,0.5);padding:8px 0;display:flex;align-items:center;gap:8px;">
+        <div style="width:14px;height:14px;border:2px solid rgba(255,255,255,0.15);border-top-color:rgba(255,255,255,0.6);border-radius:50%;animation:spin 0.9s linear infinite;flex-shrink:0;"></div>
+        Analyzing your notes…
+      </div>
+      <div id="notes-instructions-wrap" style="display:none;">
+        <div style="font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:rgba(255,255,255,0.4);margin-bottom:8px;">We extracted these instructions from your notes — toggle any you'd like to ignore:</div>
+        <div id="notes-instructions-list"></div>
+        <div id="notes-conflicts-wrap" style="display:none;margin-top:12px;">
+          <div style="font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#f2c94c;margin-bottom:8px;">⚠ Conflicts detected — please resolve:</div>
+          <div id="notes-conflicts-list"></div>
+        </div>
+      </div>
     </div>
 
     <!-- SUBMIT -->
@@ -618,6 +649,154 @@ document.addEventListener('change', function(e) {
   }
 });
 
+// ── NOTES ANALYSIS ──
+var _notesAnalysisTimer = null;
+var _lastAnalyzedNotes = '';
+window._confirmedInstructions = [];
+
+function analyzeNotes() {
+  var notes = document.getElementById('additional_notes').value.trim();
+  if (!notes || notes === _lastAnalyzedNotes) return;
+  _lastAnalyzedNotes = notes;
+
+  var wrap = document.getElementById('notes-analysis-wrap');
+  var analyzing = document.getElementById('notes-analyzing');
+  var instrWrap = document.getElementById('notes-instructions-wrap');
+
+  wrap.style.display = 'block';
+  analyzing.style.display = 'flex';
+  instrWrap.style.display = 'none';
+
+  // Gather current approved foods for conflict detection
+  var approvedFoods = [];
+  ['foods_breakfast','foods_lunch_dinner','foods_snacks','foods_race_morning'].forEach(function(name) {
+    document.querySelectorAll('input[name="' + name + '"]:checked').forEach(function(cb) {
+      approvedFoods.push(cb.value.toLowerCase());
+    });
+  });
+
+  var dietaryRestrictions = document.querySelector('[name="dietary_restrictions"]')?.value || '';
+  var cookingSituation = document.querySelector('input[name="cooking_situation"]:checked')?.value || '';
+
+  fetch(WORKER_URL + '/analyze-notes', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      notes: notes,
+      dietary_restrictions: dietaryRestrictions,
+      cooking_situation: cookingSituation,
+    })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    analyzing.style.display = 'none';
+    if (!data.instructions || data.instructions.length === 0) {
+      wrap.style.display = 'none';
+      return;
+    }
+
+    window._confirmedInstructions = data.instructions.map(function(inst, i) {
+      return { id: i, instruction: inst.instruction, category: inst.category, confirmed: true };
+    });
+
+    // Detect conflicts
+    var conflicts = [];
+    window._confirmedInstructions.forEach(function(inst) {
+      if (inst.category === 'food_exclude') {
+        // Check if excluded food is in approved checkboxes
+        var foodName = inst.instruction.toLowerCase();
+        approvedFoods.forEach(function(af) {
+          if (foodName.indexOf(af) !== -1 || af.indexOf(foodName.replace(/exclude|no |remove /g,'').trim()) !== -1) {
+            conflicts.push({ instruction_id: inst.id, approved_food: af, instruction: inst.instruction });
+          }
+        });
+      }
+    });
+
+    renderInstructions(conflicts);
+    instrWrap.style.display = 'block';
+  })
+  .catch(function(err) {
+    analyzing.style.display = 'none';
+    wrap.style.display = 'none';
+  });
+}
+
+function renderInstructions(conflicts) {
+  var list = document.getElementById('notes-instructions-list');
+  list.innerHTML = '';
+
+  window._confirmedInstructions.forEach(function(inst) {
+    var hasConflict = conflicts.find(function(c) { return c.instruction_id === inst.id; });
+    var row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:flex-start;gap:10px;padding:8px 10px;background:rgba(255,255,255,0.05);border-radius:8px;margin-bottom:6px;border:1px solid rgba(255,255,255,0.08);';
+
+    var toggleWrap = document.createElement('div');
+    toggleWrap.style.cssText = 'display:flex;gap:4px;flex-shrink:0;margin-top:1px;';
+
+    var useBtn = document.createElement('button');
+    useBtn.type = 'button';
+    useBtn.textContent = 'Use';
+    useBtn.style.cssText = 'font-size:10px;font-weight:600;padding:2px 8px;border-radius:4px;border:none;cursor:pointer;font-family:inherit;background:#204e99;color:#fff;';
+
+    var ignoreBtn = document.createElement('button');
+    ignoreBtn.type = 'button';
+    ignoreBtn.textContent = 'Ignore';
+    ignoreBtn.style.cssText = 'font-size:10px;font-weight:600;padding:2px 8px;border-radius:4px;border:1px solid rgba(255,255,255,0.2);cursor:pointer;font-family:inherit;background:transparent;color:rgba(255,255,255,0.4);';
+
+    useBtn.onclick = function() {
+      inst.confirmed = true;
+      useBtn.style.background = '#204e99';
+      useBtn.style.color = '#fff';
+      ignoreBtn.style.background = 'transparent';
+      ignoreBtn.style.color = 'rgba(255,255,255,0.4)';
+      row.style.opacity = '1';
+    };
+    ignoreBtn.onclick = function() {
+      inst.confirmed = false;
+      ignoreBtn.style.background = 'rgba(255,255,255,0.1)';
+      ignoreBtn.style.color = 'rgba(255,255,255,0.7)';
+      useBtn.style.background = 'transparent';
+      useBtn.style.color = 'rgba(255,255,255,0.3)';
+      row.style.opacity = '0.5';
+    };
+
+    toggleWrap.appendChild(useBtn);
+    toggleWrap.appendChild(ignoreBtn);
+
+    var textWrap = document.createElement('div');
+    textWrap.style.cssText = 'flex:1;';
+
+    var instrText = document.createElement('div');
+    instrText.style.cssText = 'font-size:12.5px;color:rgba(255,255,255,0.85);line-height:1.5;';
+    instrText.textContent = inst.instruction;
+
+    textWrap.appendChild(instrText);
+
+    if (hasConflict) {
+      var conflictNote = document.createElement('div');
+      conflictNote.style.cssText = 'font-size:11px;color:#f2c94c;margin-top:4px;';
+      conflictNote.textContent = '⚠ Conflicts with your approved food selection for "' + hasConflict.approved_food + '" — this note will override the checkbox if you keep it as "Use".';
+      textWrap.appendChild(conflictNote);
+    }
+
+    row.appendChild(toggleWrap);
+    row.appendChild(textWrap);
+    list.appendChild(row);
+  });
+}
+
+// No-protein checkbox logic
+document.addEventListener('change', function(e) {
+  if (e.target.id === 'no-protein-cb' && e.target.checked) {
+    document.querySelectorAll('input[name="preferred_proteins"]').forEach(function(cb) {
+      if (cb.id !== 'no-protein-cb') cb.checked = false;
+    });
+  } else if (e.target.name === 'preferred_proteins' && e.target.id !== 'no-protein-cb' && e.target.checked) {
+    document.getElementById('no-protein-cb').checked = false;
+  }
+});
+
 var WORKER_URL = "https://qt2-carb-loader-agent.jesse-477.workers.dev";
 
 // ── On load: validate purchase token ──
@@ -704,12 +883,17 @@ document.getElementById('intake-form').addEventListener('submit', function(e) {
   formData['cooking_situation'] = cookingChecked ? cookingChecked.value : '';
   formData['gi_sensitivity']    = giChecked      ? giChecked.value      : '';
 
-  var checkFields = ['foods_breakfast','foods_lunch_dinner','foods_snacks','foods_race_morning'];
+  var checkFields = ['foods_breakfast','foods_lunch_dinner','foods_snacks','foods_race_morning','preferred_proteins'];
   checkFields.forEach(function(name) {
     var checked = Array.from(form.querySelectorAll('input[name="' + name + '"]:checked'))
       .map(function(el) { return el.value; });
     formData[name] = checked.join(',');
   });
+
+  // Add confirmed notes instructions
+  formData['notes_instructions'] = window._confirmedInstructions
+    ? window._confirmedInstructions.filter(function(i) { return i.confirmed; }).map(function(i) { return i.instruction; }).join('|')
+    : '';
 
   // Capture email for form_data
   var email_field_val = form.querySelector('[name="athlete_name"]') ? 
