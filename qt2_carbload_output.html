@@ -239,6 +239,66 @@ body {
   .page { padding: 1.25rem 1rem 5rem; }
 }
 
+.review-banner {
+  background: rgba(242,201,76,0.1);
+  border-bottom: 2px solid rgba(242,201,76,0.4);
+  padding: 0.875rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+.review-banner.final {
+  background: rgba(111,207,151,0.1);
+  border-bottom-color: rgba(111,207,151,0.4);
+}
+.review-banner-title { font-size: 13px; font-weight: 700; color: #f2c94c; }
+.review-banner.final .review-banner-title { color: #6fcf97; }
+.review-banner-sub { font-size: 11px; color: rgba(255,255,255,0.55); margin-top: 2px; }
+.review-submit-btn {
+  background: #204e99; color: #fff; border: none; border-radius: 8px;
+  padding: 0.625rem 1.5rem; font-size: 13px; font-weight: 600;
+  cursor: pointer; font-family: inherit; white-space: nowrap;
+}
+.review-submit-btn.final-btn { background: #27ae60; }
+.review-submit-btn:hover { opacity: 0.9; }
+
+/* Item action buttons */
+.item-actions {
+  display: flex; gap: 4px; margin-top: 6px; flex-wrap: wrap;
+}
+.item-action-btn {
+  font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 4px;
+  border: 1px solid rgba(255,255,255,0.2); cursor: pointer;
+  font-family: inherit; background: transparent; color: rgba(255,255,255,0.6);
+  transition: all 0.12s;
+}
+.item-action-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
+.item-action-btn.accept-btn { border-color: rgba(111,207,151,0.5); color: #6fcf97; }
+.item-action-btn.accept-btn.active { background: rgba(111,207,151,0.2); }
+.item-action-btn.decline-btn { border-color: rgba(252,129,129,0.5); color: #fc8181; }
+.item-action-btn.decline-btn.active { background: rgba(252,129,129,0.15); }
+.item-action-btn.alt-btn { border-color: rgba(242,201,76,0.4); color: #f2c94c; }
+.item-action-btn.primary-btn { border-color: rgba(111,207,151,0.5); color: #6fcf97; }
+.food-item.declined { opacity: 0.35; }
+.food-item.declined .food-name { text-decoration: line-through; }
+.sub-item.declined { opacity: 0.35; }
+.sub-item.declined .sub-label { text-decoration: line-through; }
+.meal-note-input {
+  width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 6px; padding: 6px 10px; font-size: 11.5px; color: rgba(255,255,255,0.8);
+  font-family: inherit; resize: none; margin-top: 8px; outline: none;
+  transition: border-color 0.15s;
+}
+.meal-note-input:focus { border-color: rgba(255,255,255,0.25); }
+.meal-note-input::placeholder { color: rgba(255,255,255,0.25); }
+.fixed-badge {
+  font-size: 9px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+  color: rgba(255,255,255,0.4); background: rgba(255,255,255,0.08);
+  padding: 2px 7px; border-radius: 4px; margin-left: 8px;
+}
+
 /* PRINT */
 /* Setting margin to 0 removes the browser chrome header/footer band entirely */
 @page {
@@ -887,6 +947,14 @@ ${p.notes_instructions ? p.notes_instructions.split('|').map((inst, i) => '  ' +
   - approach instructions: apply that strategy throughout the entire plan
   - preference instructions: honor throughout where possible
 
+${p._is_regeneration ? `PLAN EDIT INSTRUCTIONS (athlete reviewed Pass 1 draft — apply ALL of these exactly):
+${p.notes_instructions ? p.notes_instructions.split('|').filter(i => i.startsWith('LOCK:') || i.startsWith('EXCLUDE:') || i.startsWith('PROMOTE:') || i.startsWith('DEMOTE:') || i.startsWith('MEAL NOTE:')).map(i => '  - ' + i).join('\n') : '  None.'}
+- LOCK items: use that exact food and portion, do not change it
+- EXCLUDE items: do not use that food anywhere including substitutions
+- PROMOTE items: make that food the primary item, move original to alternatives
+- DEMOTE items: move that food to alternatives, find a new primary
+- MEAL NOTE items: treat as direct instruction for that specific meal` : ''}
+
 APPROVED FOODS — build the plan ONLY from foods that appear in BOTH the approved list below AND the CHO reference table (or custom foods list). Do not introduce any food not on the athlete's approved list.
 - Approved breakfast foods: ${approved.breakfast}
 - Approved lunch/dinner foods: ${approved.lunch_dinner}
@@ -1175,27 +1243,15 @@ async function init() {
       html += renderRaceMorning(plan.race_morning, params, t);
     }
 
-    document.getElementById('main').innerHTML = `<div class="page">${html}</div>`;
-    document.getElementById('pdf-bar').style.display = 'flex';
+    // Store plan and params globally for review workflow
+    window._currentPlan   = plan;
+    window._currentParams = params;
+    window._currentT      = t;
+    window._reviewPass    = 1;
+    window._editDecisions = {}; // keyed by "section.mealIdx.itemIdx"
 
-    // Send completed plan back to Worker for storage + race-week email scheduling
-    if (planToken) {
-      try {
-        await fetch(WORKER_URL + '/store-plan', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            plan_token: planToken,
-            plan: plan,
-            params: { ...params, email: window._sessionEmail || '' },
-            targets: t,
-          })
-        });
-      } catch(e) {
-        // Non-blocking — don't fail the page if this errors
-        console.warn('Plan storage/scheduling failed:', e.message);
-      }
-    }
+    // Render Pass 1 draft review
+    renderReviewPlan(plan, params, t, 1);
 
   } catch(err) {
     console.error('Full error:', err);
@@ -1812,6 +1868,341 @@ function buildEmailMealCard(cardEl) {
     '<tbody>' + itemsHTML +
     '<tr style="background:rgba(0,0,0,0.15);border-top:1px solid rgba(255,255,255,0.1);"><td style="padding:8px 12px;font-size:12px;color:rgba(255,255,255,0.5);">Total</td><td style="padding:8px 12px;font-size:13px;font-weight:700;color:#fff;text-align:right;">' + total + '</td></tr>' +
     '</tbody></table>';
+}
+
+
+// ══════════════════════════════════════════════════════
+// PLAN REVIEW WORKFLOW
+// ══════════════════════════════════════════════════════
+
+function renderReviewPlan(plan, params, t, pass) {
+  window._reviewPass = pass;
+  const isFirst = pass === 1;
+
+  // Build page HTML
+  let pageHtml = '';
+  if (plan.two_day && plan.two_day.length > 0) {
+    const tdDate = formatDate(params.race_date, -2);
+    pageHtml += `<div class="section-label">Two Days Before the Race</div>
+      <div class="day-header"><div>
+        <div class="day-title">Two Days Before</div>
+        ${tdDate ? `<div class="day-date">${tdDate}</div>` : ''}
+      </div></div>`;
+    plan.two_day.forEach((m, mi) => {
+      pageHtml += renderReviewMealCard(m, `two_day.${mi}`, false);
+    });
+  }
+  const dbDate = formatDate(params.race_date, -1);
+  pageHtml += `<div class="section-label">Day Before the Race</div>
+    <div class="day-header"><div>
+      <div class="day-title">Day Before</div>
+      ${dbDate ? `<div class="day-date">${dbDate}</div>` : ''}
+    </div></div>`;
+  plan.day_before.forEach((m, mi) => {
+    pageHtml += renderReviewMealCard(m, `day_before.${mi}`, false);
+  });
+  if (plan.race_morning) {
+    const raceDate = formatDate(params.race_date, 0);
+    pageHtml += `<div class="section-label">Race Morning</div>
+      <div class="day-header"><div>
+        <div class="day-title">Race Morning</div>
+        ${raceDate ? `<div class="day-date">${raceDate}</div>` : ''}
+      </div></div>`;
+    (plan.race_morning.windows || []).forEach((w, wi) => {
+      const timeStr = params.race_start_time
+        ? calcRaceMorningTimes(params.race_start_time, w.minutes_before_start * -1) : null;
+      const timingLabel = timeStr
+        ? `${timeStr} · ${Math.abs(w.minutes_before_start)} min before start` : w.label;
+      const isFixed = w.minutes_before_start !== 180;
+      const meal = Object.assign({}, w.meal);
+      if (meal.items) {
+        meal.items = meal.items.filter(item => !(item.cho === 0 && (!item.food || item.food === '')));
+        meal.total = meal.items.reduce((s, item) => s + (item.cho || 0), 0);
+      }
+      pageHtml += `
+        <div class="timing-pill-wrap">
+          <div style="margin-bottom:0.25rem;">
+            <div class="timing-pill">
+              <span class="timing-dot"></span>
+              ${timingLabel}
+              ${isFixed ? '<span class="fixed-badge">Fixed</span>' : ''}
+            </div>
+          </div>
+          ${isFixed
+            ? renderMealCard(meal, null)
+            : renderReviewMealCard(meal, `race_morning.${wi}`, false)}
+        </div>`;
+    });
+  }
+
+  // Banner
+  const bannerClass = isFirst ? 'review-banner' : 'review-banner final';
+  const bannerTitle = isFirst ? 'Draft Plan — Review and customize before finalizing' : 'Final Plan — Confirm to generate your PDF';
+  const bannerSub   = isFirst ? 'Accept, decline, or swap any item. Add notes to any meal. Then regenerate.' : 'Everything looks good? Confirm to finalize.';
+  const btnLabel    = isFirst ? 'Regenerate with my changes →' : 'Looks good — finalize my plan →';
+  const btnClass    = isFirst ? 'review-submit-btn' : 'review-submit-btn final-btn';
+
+  document.getElementById('main').innerHTML = `
+    <div id="review-banner-wrap">
+      <div class="${bannerClass}">
+        <div>
+          <div class="review-banner-title">${bannerTitle}</div>
+          <div class="review-banner-sub">${bannerSub}</div>
+        </div>
+        <button class="${btnClass}" onclick="submitReview()">${btnLabel}</button>
+      </div>
+    </div>
+    <div class="page" id="review-page">${pageHtml}</div>`;
+}
+
+function renderReviewMealCard(meal, mealKey, readonly) {
+  const items = meal.items || [];
+  const itemsHtml = items.map((item, ii) => {
+    const key = `${mealKey}.${ii}`;
+    const dec = window._editDecisions[key] || {};
+    const status = dec.status || 'pending';
+    const itemClass = status === 'declined' ? 'food-item declined' : 'food-item';
+
+    const subs = (item.substitutions || []).slice(0, 2);
+    const subsHtml = subs.map((sub, si) => {
+      const subKey = `${key}.sub.${si}`;
+      const subDec = window._editDecisions[subKey] || {};
+      const subStatus = subDec.status || 'pending';
+      const subClass = subStatus === 'declined' ? 'sub-item declined' : 'sub-item';
+      return `
+        <div class="${subClass}" id="sub-${subKey.replace(/\./g,'-')}">
+          <span class="sub-tag">or</span>
+          <span class="sub-label"><strong>${sub.food}</strong> — ${sub.portion}</span>
+          <span class="sub-cho">${sub.cho}g</span>
+          ${readonly ? '' : `
+            <div class="item-actions">
+              <button class="item-action-btn primary-btn ${subStatus==='make_primary'?'active':''}"
+                onclick="setItemStatus('${subKey}','make_primary','${key}')">↑ Make Primary</button>
+              <button class="item-action-btn accept-btn ${subStatus==='accepted'?'active':''}"
+                onclick="setItemStatus('${subKey}','accepted')">✓ Keep</button>
+              <button class="item-action-btn decline-btn ${subStatus==='declined'?'active':''}"
+                onclick="setItemStatus('${subKey}','declined')">✗ Remove</button>
+            </div>`}
+        </div>`;
+    }).join('');
+
+    return `
+      <div class="${itemClass}" id="item-${key.replace(/\./g,'-')}">
+        <div class="food-primary">
+          <div class="food-left">
+            <div class="food-name">${item.food}</div>
+            <div class="food-portion">${item.portion}</div>
+          </div>
+          <div class="food-cho">${item.cho}g</div>
+        </div>
+        ${readonly ? '' : `
+          <div class="item-actions">
+            <button class="item-action-btn accept-btn ${status==='accepted'?'active':''}"
+              onclick="setItemStatus('${key}','accepted')">✓ Accept</button>
+            <button class="item-action-btn alt-btn ${status==='make_alternative'?'active':''}"
+              onclick="setItemStatus('${key}','make_alternative')">↓ Make Alternative</button>
+            <button class="item-action-btn decline-btn ${status==='declined'?'active':''}"
+              onclick="setItemStatus('${key}','declined')">✗ Decline</button>
+          </div>`}
+        ${subs.length > 0 ? `<div class="food-subs">${subsHtml}</div>` : ''}
+        ${item.note ? `<div class="meal-note">${item.note}</div>` : ''}
+      </div>`;
+  }).join('');
+
+  const mealNoteKey = `${mealKey}.note`;
+  const existingNote = (window._editDecisions[mealNoteKey] || {}).note || '';
+
+  return `
+    <div class="meal-card">
+      <div class="meal-card-header">
+        <span class="meal-name">${meal.name}</span>
+      </div>
+      ${itemsHtml}
+      <div class="meal-total">
+        <span class="meal-total-label">Total</span>
+        <span class="meal-total-val">${meal.total}g CHO</span>
+      </div>
+      ${readonly ? '' : `
+        <div style="padding:0 1.25rem 0.875rem;">
+          <textarea class="meal-note-input" id="note-${mealKey.replace(/\./g,'-')}"
+            placeholder="Any specific instructions for this meal? (optional)"
+            onchange="setMealNote('${mealKey}', this.value)"
+            rows="2">${existingNote}</textarea>
+        </div>`}
+    </div>`;
+}
+
+function setItemStatus(key, status, primaryKey) {
+  window._editDecisions[key] = window._editDecisions[key] || {};
+  window._editDecisions[key].status = status;
+
+  // If making a sub primary, also mark the original primary as make_alternative
+  if (status === 'make_primary' && primaryKey) {
+    window._editDecisions[primaryKey] = window._editDecisions[primaryKey] || {};
+    window._editDecisions[primaryKey].status = 'make_alternative';
+  }
+
+  // Re-render to reflect changes
+  renderReviewPlan(window._currentPlan, window._currentParams, window._currentT, window._reviewPass);
+
+  // Restore scroll position and note values
+  setTimeout(() => {
+    Object.keys(window._editDecisions).forEach(k => {
+      if (k.endsWith('.note')) {
+        const el = document.getElementById('note-' + k.replace('.note','').replace(/\./g,'-'));
+        if (el) el.value = window._editDecisions[k].note || '';
+      }
+    });
+  }, 10);
+}
+
+function setMealNote(mealKey, value) {
+  const noteKey = `${mealKey}.note`;
+  window._editDecisions[noteKey] = { note: value };
+}
+
+async function submitReview() {
+  const pass = window._reviewPass;
+  const plan = window._currentPlan;
+  const params = window._currentParams;
+  const t = window._currentT;
+
+  if (pass === 2) {
+    // FINALIZE — show PDF bar, schedule emails
+    document.getElementById('review-banner-wrap').style.display = 'none';
+    document.getElementById('pdf-bar').style.display = 'flex';
+
+    // Render final clean plan
+    let html = '';
+    if (plan.two_day && plan.two_day.length > 0) {
+      const tdDate = formatDate(params.race_date, -2);
+      html += `<div class="section-label">Two Days Before the Race</div>
+        <div class="day-header"><div>
+          <div class="day-title">Two Days Before</div>
+          ${tdDate ? `<div class="day-date">${tdDate}</div>` : ''}
+        </div></div>`;
+      plan.two_day.forEach(m => { html += renderMealCard(m, null); });
+    }
+    const dbDate = formatDate(params.race_date, -1);
+    html += `<div class="section-label">Day Before the Race</div>
+      <div class="day-header"><div>
+        <div class="day-title">Day Before</div>
+        ${dbDate ? `<div class="day-date">${dbDate}</div>` : ''}
+      </div></div>`;
+    plan.day_before.forEach(m => { html += renderMealCard(m, null); });
+    if (plan.race_morning) html += renderRaceMorning(plan.race_morning, params, t);
+    document.getElementById('review-page').innerHTML = html;
+
+    // Store plan and schedule emails
+    const planToken = getPlanToken();
+    if (planToken) {
+      try {
+        await fetch(WORKER_URL + '/store-plan', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            plan_token: planToken,
+            plan: plan,
+            params: { ...params, email: window._sessionEmail || '' },
+            targets: t,
+          })
+        });
+      } catch(e) { console.warn('Plan storage failed:', e.message); }
+    }
+    return;
+  }
+
+  // PASS 1 → regenerate with edit decisions
+  // Collect edit instructions
+  const decisions = window._editDecisions;
+  const editInstructions = [];
+  const lockedItems = [];
+  const excludedItems = [];
+  const promotedItems = [];
+  const demotedItems = [];
+  const mealNotes = [];
+
+  // Walk the plan and apply decisions
+  function applyDecisions(meals, section) {
+    meals.forEach((meal, mi) => {
+      const mealKey = `${section}.${mi}`;
+      const noteKey = `${mealKey}.note`;
+      if (decisions[noteKey]?.note) {
+        mealNotes.push(`${meal.name}: ${decisions[noteKey].note}`);
+      }
+      (meal.items || []).forEach((item, ii) => {
+        const key = `${mealKey}.${ii}`;
+        const dec = decisions[key] || {};
+        if (dec.status === 'accepted') lockedItems.push(`${meal.name}: keep "${item.food}" as primary`);
+        if (dec.status === 'declined') excludedItems.push(`${meal.name}: remove "${item.food}" entirely`);
+        if (dec.status === 'make_alternative') demotedItems.push(`${meal.name}: move "${item.food}" to alternatives`);
+        (item.substitutions || []).forEach((sub, si) => {
+          const subKey = `${key}.sub.${si}`;
+          const subDec = decisions[subKey] || {};
+          if (subDec.status === 'make_primary') promotedItems.push(`${meal.name}: promote "${sub.food}" to primary instead of "${item.food}"`);
+          if (subDec.status === 'declined') excludedItems.push(`${meal.name}: remove "${sub.food}" from alternatives`);
+        });
+      });
+    });
+  }
+
+  if (plan.two_day) applyDecisions(plan.two_day, 'two_day');
+  applyDecisions(plan.day_before, 'day_before');
+
+  // Build regeneration instructions
+  const allInstructions = [
+    ...lockedItems.map(i => `LOCK: ${i}`),
+    ...excludedItems.map(i => `EXCLUDE: ${i}`),
+    ...promotedItems.map(i => `PROMOTE: ${i}`),
+    ...demotedItems.map(i => `DEMOTE: ${i}`),
+    ...mealNotes.map(i => `MEAL NOTE: ${i}`),
+  ];
+
+  if (allInstructions.length === 0 && mealNotes.length === 0) {
+    // No changes — just move to pass 2
+    window._reviewPass = 2;
+    renderReviewPlan(plan, params, t, 2);
+    return;
+  }
+
+  // Show loading
+  document.getElementById('main').innerHTML = `
+    <div class="loading-wrap">
+      <div class="loading-spinner"></div>
+      <div class="loading-text">Regenerating your plan with your changes…</div>
+      <div class="loading-sub">This takes about 20 seconds</div>
+    </div>`;
+
+  // Add edit instructions to params and regenerate
+  const editParams = Object.assign({}, params, {
+    notes_instructions: allInstructions.join('|'),
+    _is_regeneration: true,
+  });
+
+  try {
+    const prompt = buildPrompt(editParams, t);
+    const resp = await fetch(WORKER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages: [{ role: 'user', content: prompt }] })
+    });
+    const data = await resp.json();
+    const raw  = data.content?.find(b => b.type === 'text')?.text || '';
+    const clean = raw.replace(/```json|```/g, '').trim();
+    const newPlan = JSON.parse(clean);
+
+    window._currentPlan   = newPlan;
+    window._editDecisions = {}; // reset for pass 2
+    window._reviewPass    = 2;
+    renderReviewPlan(newPlan, params, t, 2);
+
+  } catch(err) {
+    document.getElementById('main').innerHTML = `
+      <div class="error-wrap">
+        <div class="error-title">Regeneration failed</div>
+        <div class="error-msg">${err.message}</div>
+      </div>`;
+  }
 }
 
 init();
