@@ -533,7 +533,8 @@ function renderLogistics() {
     '<div class="check-grid" style="margin-top:6px;">' +
     proteinOptions.map(function(p) {
       var checked = S.preferred_proteins.indexOf(p) !== -1;
-      return '<label class="check-item"><input type="checkbox" name="preferred_proteins" value="'+p+'" '+(checked?'checked':'')+' onchange="toggleArr('preferred_proteins',''+p+'',this.checked)" /> '+p+'</label>';
+      var chk = checked ? ' checked' : '';
+      return '<label class="check-item"><input type="checkbox" name="preferred_proteins" value="'+p+'"'+chk+' data-arr="preferred_proteins" /> '+p+'</label>';
     }).join('') +
     '</div></div>';
 
@@ -575,7 +576,8 @@ function renderFoods(section, title, stateKey) {
   var checkboxes = allFoods.map(function(food) {
     if (allowed && allowed.indexOf(food) === -1) return '';
     var checked = selected.indexOf(food) !== -1;
-    return '<label class="check-item"><input type="checkbox" name="'+stateKey+'" value="'+food+'" '+(checked?'checked':'')+' onchange="toggleArr(''+stateKey+'',''+food+'',this.checked)" /> '+food+'</label>';
+    var chk2 = checked ? ' checked' : '';
+    return '<label class="check-item"><input type="checkbox" name="'+stateKey+'" value="'+food+'"'+chk2+' data-arr="'+stateKey+'" /> '+food+'</label>';
   }).join('');
 
   var selectAllId = 'sa-' + stateKey;
