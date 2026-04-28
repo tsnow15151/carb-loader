@@ -467,10 +467,12 @@ function getParams() {
     foods_lunch_dinner:       get('foods_lunch_dinner'),
     foods_snacks:             get('foods_snacks'),
     foods_race_morning:       get('foods_race_morning'),
-    foods_breakfast_custom:   get('foods_breakfast_custom'),
+    foods_breakfast_custom:    get('foods_breakfast_custom'),
     foods_lunch_dinner_custom: get('foods_lunch_dinner_custom'),
-    foods_snacks_custom:      get('foods_snacks_custom'),
+    foods_snacks_custom:       get('foods_snacks_custom'),
     foods_race_morning_custom: get('foods_race_morning_custom'),
+    preferred_proteins:        get('preferred_proteins'),
+    notes_instructions:        get('notes_instructions'),
   };
 }
 
@@ -769,12 +771,14 @@ ATHLETE PROFILE:
 
 - Foods to NEVER include: ${p.foods_never_include || 'none'} — absolute exclusion from every item and substitution.
 
-- Additional notes: ${p.additional_notes || 'none'}
-  *** CRITICAL: Treat additional notes as DIRECT MEAL PLANNING INSTRUCTIONS with the highest priority. ***
-  - If the athlete says they are bringing a specific food (e.g. "I am bringing gluten-free bread"), that food MUST become the primary carbohydrate source for the meals they specified. Build those meals around that food first, then fill remaining CHO targets with other approved items.
-  - If the athlete describes a specific eating situation (e.g. "I will eat dinners at restaurants, all other meals from the hotel"), honor that exactly — override the cooking situation selection if needed.
-  - If the athlete expresses a preference (e.g. "I prefer rice over pasta"), respect it throughout the entire plan.
-  - Do not ignore or deprioritize the additional notes. They represent the athlete's real-world constraints.
+- Additional notes (raw): ${p.additional_notes || 'none'}
+- Confirmed athlete instructions (HIGHEST PRIORITY — athlete has reviewed and approved each of these):
+${p.notes_instructions ? p.notes_instructions.split('|').map((inst, i) => '  ' + (i+1) + '. ' + inst).join('\n') : '  None provided.'}
+  *** These confirmed instructions override all other rules except dietary restrictions and safety. Apply each one exactly as written. ***
+  - food_primary instructions: use that food as the primary item in the specified meals
+  - food_exclude instructions: remove that food from every item and substitution
+  - approach instructions: apply that strategy throughout the entire plan
+  - preference instructions: honor throughout where possible
 
 APPROVED FOODS — build the plan ONLY from foods that appear in BOTH the approved list below AND the CHO reference table (or custom foods list). Do not introduce any food not on the athlete's approved list.
 - Approved breakfast foods: ${approved.breakfast}
@@ -844,8 +848,15 @@ ACCURACY RULES:
 2. meal.total must exactly equal the sum of all item cho values — verify this before returning.
 3. Low fiber, low fat, low residue foods only.
 4. No foods the athlete hasn't approved.
-5. PROTEIN RULE: Every breakfast, lunch, and dinner must include a small protein source (0g CHO) as the final item. Use one of: scrambled eggs (2 eggs, 0g CHO), grilled chicken breast (4 oz, 0g CHO), canned tuna (3 oz, 0g CHO), turkey slices (3 oz, 0g CHO), whey protein shake (1 scoop, 0g CHO). Choose based on cooking situation — no eggs if microwave/no_cook. Set cho: 0. Do NOT include protein in snacks.
-6. RACE MORNING PROTEIN: Include a small whey protein shake (1 scoop, 0g CHO) as the final item in the race morning MAIN MEAL only — not the top-up. Only include if gi_sensitivity is Normal or Sensitive. Skip entirely if gi_sensitivity is Very Sensitive.
+5. PROTEIN RULE:
+  - Preferred proteins: ${p.preferred_proteins || 'any'}
+  - If "No protein" is in preferred proteins → skip protein entirely for all meals including race morning.
+  - If specific proteins are listed → only use those proteins. Never use a protein not in the preferred list.
+  - If no preference listed → choose from: scrambled eggs, grilled chicken breast, canned tuna, turkey slices, whey protein shake.
+  - Cooking situation constraints: no eggs if microwave or no_cook. No chicken/tuna if no_cook.
+  - Every breakfast, lunch, and dinner must include the protein as the final item (cho: 0). Do NOT include protein in snacks.
+  - EXCEPTION: If sandwich is the primary lunch/dinner item → suppress protein rule for that meal (sandwich provides protein).
+6. RACE MORNING PROTEIN: Include whey protein shake (1 scoop, 0g CHO) as the final item in the race morning MAIN MEAL only — not the top-up. Skip if gi_sensitivity is Very Sensitive or if "No protein" is preferred.
 
 COOKING CONTEXT (current athlete: ${cookingKey}):
 - full_kitchen: full cooking available. Fresh pasta, fresh rice cooked to exact portions, eggs any style, grilled chicken/fish, oatmeal from scratch. Most flexible option.
