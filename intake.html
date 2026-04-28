@@ -458,12 +458,12 @@ function navButtons(backLabel, nextLabel, nextId, nextDisabled, isGenerate) {
 function renderWelcome() {
   var body = '<div style="padding:0.5rem 0;">' +
     '<div class="welcome-item"><div class="welcome-num">1</div><div class="welcome-text"><strong>Tell us about your race.</strong> Date, start time, expected finish, and body weight — takes 2 minutes.</div></div>' +
-    '<div class="welcome-item"><div class="welcome-num">2</div><div class="welcome-text"><strong>Tell us your situation.</strong> Where you'll be eating, any GI history, food preferences and restrictions.</div></div>' +
-    '<div class="welcome-item"><div class="welcome-num">3</div><div class="welcome-text"><strong>Select your approved foods.</strong> Check only what you'd actually eat. Leave blank to allow any.</div></div>' +
+    '<div class="welcome-item"><div class="welcome-num">2</div><div class="welcome-text"><strong>Tell us your situation.</strong> Where you\'ll be eating, any GI history, food preferences and restrictions.</div></div>' +
+    '<div class="welcome-item"><div class="welcome-num">3</div><div class="welcome-text"><strong>Select your approved foods.</strong> Check only what you\'d actually eat. Leave blank to allow any.</div></div>' +
     '<div class="welcome-item"><div class="welcome-num">4</div><div class="welcome-text"><strong>Review and finalize.</strong> Your personalized plan generates in about 20 seconds. Review each meal, make changes, then save as PDF or email it to yourself.</div></div>' +
     '<div style="margin-top:1.25rem;padding:10px 14px;background:rgba(255,255,255,0.05);border-radius:8px;font-size:12px;color:rgba(255,255,255,0.5);line-height:1.6;">Have ready: your race date and start time, expected finish time, body weight, and a sense of your hotel/cooking situation.</div>' +
     '</div>';
-  return card('Welcome to your carb-loading plan.', 'Built specifically for your body weight, race duration, food preferences, and cooking situation.', body, navButtons(null, 'Let's get started →', 'btn-next-welcome', false));
+  return card('Welcome to your carb-loading plan.', 'Built specifically for your body weight, race duration, food preferences, and cooking situation.', body, navButtons(null, 'Let\'s get started →', 'btn-next-welcome', false));
 }
 
 function renderRaceInfo() {
@@ -528,7 +528,7 @@ function renderLogistics() {
     radioGroup('60-Minute Top-Up Preference', 'topup_format', topupOptions, S.topup_format, true,
       'Choose your preferred format for the top-up 60 minutes before your race start.') +
     '<div class="field"><label class="field-label">Preferred Protein Sources</label>' +
-    '<div class="field-hint">We include a small protein with main meals. Check what you're comfortable with. Leave blank to allow any.</div>' +
+    '<div class="field-hint">We include a small protein with main meals. Check what you\'re comfortable with. Leave blank to allow any.</div>' +
     '<div class="check-grid" style="margin-top:6px;">' +
     proteinOptions.map(function(p) {
       var checked = S.preferred_proteins.indexOf(p) !== -1;
@@ -581,12 +581,12 @@ function renderFoods(section, title, stateKey) {
   var allChecked = (allowed || allFoods).filter(function(f){ return !allowed || allowed.indexOf(f)!==-1; }).every(function(f){ return selected.indexOf(f)!==-1; });
 
   var body =
-    '<div class="field-hint" style="margin-bottom:10px;">Check all you'd be comfortable eating. Leave blank to allow any from this category.</div>' +
+    '<div class="field-hint" style="margin-bottom:10px;">Check all you\'d be comfortable eating. Leave blank to allow any from this category.</div>' +
     '<button class="select-all-btn '+(allChecked?'all-selected':'')+'" id="'+selectAllId+'" onclick="selectAll(''+stateKey+'',''+selectAllId+'',this)">'+(allChecked?'Deselect All':'Select All')+'</button>' +
     '<div class="check-grid">' + checkboxes + '</div>' +
     '<div class="field" style="margin-top:1rem;">' +
     '<label class="field-label">Custom Foods <span style="font-size:10px;font-weight:400;color:rgba(255,255,255,0.35);">— optional</span></label>' +
-    '<div class="field-hint">Format: <em>Food name, serving size, CHO per serving</em> — one per line. CHO optional (we'll estimate if blank).<br>Example: <em>GF bread, 2 slices, 24g</em></div>' +
+    '<div class="field-hint">Format: <em>Food name, serving size, CHO per serving</em> — one per line. CHO optional (we\'ll estimate if blank).<br>Example: <em>GF bread, 2 slices, 24g</em></div>' +
     '<textarea id="'+customKey+'" placeholder="GF bread, 2 slices, 24g&#10;Rice cake with honey, 1 cake" style="margin-top:6px;min-height:60px;" onchange="save(''+customKey+'',this.value)">'+escHtml(customVal)+'</textarea>' +
     '</div>';
 
@@ -598,7 +598,7 @@ function renderNotes() {
     '<div class="field">' +
     '<label class="field-label">Additional Notes</label>' +
     '<div class="field-hint" style="margin-bottom:6px;">Describe your cooking situation in detail, any past race nutrition experience, food preferences, or anything else that should influence your plan. If your situation is mixed (e.g. some restaurant meals, some hotel room), describe it here.</div>' +
-    '<textarea id="additional_notes" placeholder="e.g. I'll be eating all dinners and the day-before breakfast at restaurants. All other meals from a hotel room with a microwave.&#10;&#10;I've had GI issues in past Ironman races — I want a conservative approach." style="min-height:100px;" onblur="analyzeNotes()" oninput="save('additional_notes',this.value)">'+escHtml(S.additional_notes)+'</textarea>' +
+    '<textarea id="additional_notes" placeholder="e.g. I\'ll be eating all dinners and the day-before breakfast at restaurants. All other meals from a hotel room with a microwave.&#10;&#10;I\'ve had GI issues in past Ironman races — I want a conservative approach." style="min-height:100px;" onblur="analyzeNotes()" oninput="save('additional_notes',this.value)">'+escHtml(S.additional_notes)+'</textarea>' +
     '</div>' +
     '<div id="notes-analysis-area"></div>';
 
