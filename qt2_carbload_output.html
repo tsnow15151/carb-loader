@@ -190,10 +190,10 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
     <div class="how-to-grid">
       <div class="how-to-item"><div class="how-to-num">1</div><div class="how-to-text"><strong>Follow the days in order.</strong> Start with two-days-before if included, then day before, then race morning.</div></div>
       <div class="how-to-item"><div class="how-to-num">2</div><div class="how-to-text"><strong>Hit your totals, not just the foods.</strong> The carbohydrate number at the bottom of each meal is what matters.</div></div>
-      <div class="how-to-item"><div class="how-to-num">3</div><div class="how-to-text"><strong>Drink your sports drink.</strong> It's doing real work. Sip it with your meal rather than all at once.</div></div>
+      <div class="how-to-item"><div class="how-to-num">3</div><div class="how-to-text"><strong>Drink your sports drink.</strong> It\'s doing real work. Sip it with your meal rather than all at once.</div></div>
       <div class="how-to-item"><div class="how-to-num">4</div><div class="how-to-text"><strong>Keep fat and fiber low.</strong> Low fiber, low fat, familiar foods only — your gut will thank you.</div></div>
       <div class="how-to-item"><div class="how-to-num">5</div><div class="how-to-text"><strong>Race morning has three windows.</strong> Main meal 3 hrs out. Top-up 60 min out. Final gel at the start line.</div></div>
-      <div class="how-to-item"><div class="how-to-num">6</div><div class="how-to-text"><strong>You may gain 1–3 lbs.</strong> That's water binding to glycogen. It will be gone by mile 3.</div></div>
+      <div class="how-to-item"><div class="how-to-num">6</div><div class="how-to-text"><strong>You may gain 1–3 lbs.</strong> That\'s water binding to glycogen. It will be gone by mile 3.</div></div>
     </div>
   </div>
 </div>
@@ -222,7 +222,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 <div id="email-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:200;align-items:center;justify-content:center;">
   <div style="background:#003c6f;border:1px solid rgba(255,255,255,0.15);border-radius:16px;padding:2rem;max-width:400px;width:90%;text-align:center;">
     <div style="font-size:15px;font-weight:600;color:#fff;margin-bottom:8px;">Email me this plan</div>
-    <div style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:1.25rem;">We'll send a formatted copy to your inbox.</div>
+    <div style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:1.25rem;">We\'ll send a formatted copy to your inbox.</div>
     <input id="email-input" type="email" placeholder="your@email.com" style="width:100%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);border-radius:8px;padding:10px 12px;font-size:13px;color:#fff;font-family:inherit;outline:none;margin-bottom:1rem;box-sizing:border-box;" />
     <div style="display:flex;gap:0.75rem;justify-content:center;">
       <button onclick="closeEmailModal()" style="background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.7);border:none;border-radius:8px;padding:0.625rem 1.25rem;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;">Cancel</button>
@@ -556,7 +556,7 @@ ${p.notes_instructions ? p.notes_instructions.split('|').filter(i => i.startsWit
 - DEMOTE items: move that food to alternatives, find a new primary
 - MEAL NOTE items: treat as direct instruction for that specific meal` : ''}
 
-APPROVED FOODS — build the plan ONLY from foods that appear in BOTH the approved list below AND the CHO reference table (or custom foods list). Do not introduce any food not on the athlete's approved list.
+APPROVED FOODS — build the plan ONLY from foods that appear in BOTH the approved list below AND the CHO reference table (or custom foods list). Do not introduce any food not on the athlete\'s approved list.
 - Approved breakfast foods: ${approved.breakfast}
 - Approved lunch/dinner foods: ${approved.lunch_dinner}
 - Approved snack foods: ${approved.snacks}
@@ -674,7 +674,7 @@ ${p.notes_instructions ? p.notes_instructions.split('|').filter(i => i.startsWit
 - DEMOTE items: move that food to alternatives, find a new primary
 - MEAL NOTE items: treat as direct instruction for that specific meal` : ''}
 
-APPROVED FOODS — build the plan ONLY from foods that appear in BOTH the approved list below AND the CHO reference table (or custom foods list). Do not introduce any food not on the athlete's approved list.
+APPROVED FOODS — build the plan ONLY from foods that appear in BOTH the approved list below AND the CHO reference table (or custom foods list). Do not introduce any food not on the athlete\'s approved list.
 - Approved breakfast foods: ${approved.breakfast}
 - Approved lunch/dinner foods: ${approved.lunch_dinner}
 - Approved snack foods: ${approved.snacks}
@@ -768,7 +768,7 @@ FLUID RULES:
 7. Race morning drink amounts are pre-calculated — use exactly as specified in CHO TARGETS.
 
 SUBSTITUTION RULES:
-1. Every food item must have up to 2 substitutions from the athlete's approved list using reference table values.
+1. Every food item must have up to 2 substitutions from the athlete\'s approved list using reference table values.
 2. Substitutions provide approximately the same CHO as the primary item (within 10%).
 3. Use the same mandatory calculation process for substitution portions.
 4. Gatorade substitution = juice at equivalent CHO oz.
@@ -777,7 +777,7 @@ ACCURACY RULES:
 1. Every meal total must be within 5% of its CHO target.
 2. meal.total must exactly equal the sum of all item cho values — verify this before returning.
 3. Low fiber, low fat, low residue foods only.
-4. No foods the athlete hasn't approved.
+4. No foods the athlete hasn\'t approved.
 5. PROTEIN RULE:
   - Preferred proteins: ${p.preferred_proteins || 'any'}
   - If "No protein" is in preferred proteins → skip protein entirely for all meals including race morning.
@@ -1549,10 +1549,10 @@ function savePDF() {
     const howItems = [
       ['Follow the days in order.', 'Start with two-days-before if included, then day before, then race morning.'],
       ['Hit your totals, not just the foods.', 'The carbohydrate number at the bottom of each meal is what matters.'],
-      ['Drink your sports drink.', "It's doing real work. Sip it with your meal rather than all at once."],
+      ['Drink your sports drink.', "It\'s doing real work. Sip it with your meal rather than all at once."],
       ['Keep fat and fiber low.', 'Low fiber, low fat, familiar foods only — your gut will thank you.'],
       ['Race morning has two windows.', 'Main meal 3 hrs before start. Top-up 60 min out.'],
-      ['You may gain 1–3 lbs.', "That's water binding to glycogen. It will be gone by mile 3."],
+      ['You may gain 1–3 lbs.', "That\'s water binding to glycogen. It will be gone by mile 3."],
     ];
 
     // Section title
