@@ -11,17 +11,17 @@
   --bg: #003c6f;
   --bg2: #00305a;
   --accent: #204e99;
+  --card: rgba(255,255,255,0.07);
   --border: rgba(255,255,255,0.12);
   --border2: rgba(255,255,255,0.07);
-  --card: rgba(255,255,255,0.06);
   --white: #ffffff;
   --muted: rgba(255,255,255,0.5);
   --muted2: rgba(255,255,255,0.65);
-  --muted3: rgba(255,255,255,0.35);
   --green: #6fcf97;
+  --amber: #f2c94c;
+  --red: #fc8181;
   --input-bg: rgba(255,255,255,0.07);
   --input-border: rgba(255,255,255,0.15);
-  --input-focus: rgba(255,255,255,0.3);
 }
 
 body {
@@ -29,90 +29,146 @@ body {
   background: var(--bg);
   color: var(--white);
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 /* HEADER */
 .header {
   background: var(--bg2);
   border-bottom: 1px solid var(--border);
-  padding: 1rem 2rem;
+  padding: 0.875rem 1.5rem;
   display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  flex-shrink: 0;
+}
+.header-logo { height: 36px; width: auto; mix-blend-mode: screen; }
+.header-text h1 { font-size: 15px; font-weight: 600; }
+.header-text p { font-size: 10px; color: var(--muted); margin-top: 1px; }
+
+/* WIZARD SHELL */
+.wizard-outer {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem 1rem 4rem;
+}
+
+/* PROGRESS BAR */
+.progress-wrap {
+  width: 100%;
+  max-width: 680px;
+  margin-bottom: 1.5rem;
+}
+.progress-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10.5px;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+.progress-track {
+  height: 3px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+/* CARD */
+.card {
+  width: 100%;
+  max-width: 680px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+}
+.card-header {
+  padding: 1.25rem 1.5rem 1rem;
+  border-bottom: 1px solid var(--border2);
+}
+.card-title { font-size: 18px; font-weight: 700; color: var(--white); }
+.card-subtitle { font-size: 13px; color: var(--muted); margin-top: 4px; line-height: 1.5; }
+.card-body { padding: 1.25rem 1.5rem; }
+.card-footer {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--border2);
+  display: flex;
+  justify-content: space-between;
   align-items: center;
   gap: 1rem;
 }
-.header-logo {
-  height: 44px;
-  width: auto;
-  mix-blend-mode: screen;
-}
-.header-text h1 { font-size: 16px; font-weight: 600; color: var(--white); }
-.header-text p { font-size: 11px; color: var(--muted); margin-top: 2px; }
 
-/* INTRO BAND */
-.intro {
-  background: rgba(255,255,255,0.04);
-  border-bottom: 1px solid var(--border2);
-  padding: 1.25rem 2rem;
-}
-.intro p {
-  font-size: 13px;
-  color: var(--muted2);
-  line-height: 1.65;
-  max-width: 680px;
-}
-.intro p + p { margin-top: 0.75rem; }
-.intro strong { color: var(--white); font-weight: 600; }
-
-/* FORM */
-.form-wrap {
-  max-width: 720px;
-  margin: 0 auto;
-  padding: 2rem 1.5rem 5rem;
-}
-
-/* SECTION LABEL */
-.section-label {
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+/* NAVIGATION BUTTONS */
+.btn-back {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.2);
   color: var(--muted);
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid var(--border2);
-  margin: 2rem 0 1.25rem;
+  border-radius: 8px;
+  padding: 0.625rem 1.25rem;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s;
 }
-.section-label:first-child { margin-top: 0; }
-
-/* GRID ROWS */
-.row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-.row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
-@media (max-width: 600px) {
-  .row-2, .row-3 { grid-template-columns: 1fr; }
+.btn-back:hover { border-color: rgba(255,255,255,0.4); color: var(--white); }
+.btn-next {
+  background: var(--accent);
+  border: none;
+  color: var(--white);
+  border-radius: 8px;
+  padding: 0.625rem 1.75rem;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: opacity 0.15s;
+  margin-left: auto;
 }
+.btn-next:hover { opacity: 0.9; }
+.btn-next:disabled { opacity: 0.35; cursor: not-allowed; }
+.btn-generate {
+  background: var(--green);
+  color: #003c6f;
+  border: none;
+  border-radius: 8px;
+  padding: 0.75rem 2rem;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  transition: opacity 0.15s;
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.btn-generate:hover { opacity: 0.9; }
 
-/* FIELD */
-.field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 1rem; }
+/* FORM ELEMENTS */
+.field { margin-bottom: 1.125rem; }
 .field:last-child { margin-bottom: 0; }
-
-label.field-label {
+.field-label {
   font-size: 11.5px;
   font-weight: 600;
   color: rgba(255,255,255,0.8);
+  margin-bottom: 5px;
+  display: block;
 }
+.field-hint { font-size: 10.5px; color: rgba(255,255,255,0.35); margin-top: 3px; line-height: 1.5; }
 .req { color: var(--green); margin-left: 2px; }
-.field-hint {
-  font-size: 10.5px;
-  color: var(--muted3);
-  margin-top: 1px;
-}
 
-/* INPUTS */
-input[type=text],
-input[type=number],
-input[type=date],
-input[type=time],
-select,
-textarea {
+input[type=text], input[type=number], input[type=date], input[type=time],
+select, textarea {
   background: var(--input-bg);
   border: 1px solid var(--input-border);
   border-radius: 8px;
@@ -124,143 +180,130 @@ textarea {
   transition: border-color 0.15s;
   width: 100%;
 }
-input[type=text]:focus,
-input[type=number]:focus,
-input[type=date]:focus,
-input[type=time]:focus,
-select:focus,
-textarea:focus {
-  border-color: var(--input-focus);
-}
-input::placeholder, textarea::placeholder {
-  color: rgba(255,255,255,0.2);
-}
+input:focus, select:focus, textarea:focus { border-color: rgba(255,255,255,0.3); }
+input::placeholder, textarea::placeholder { color: rgba(255,255,255,0.2); }
 input[type=date]::-webkit-calendar-picker-indicator,
-input[type=time]::-webkit-calendar-picker-indicator {
-  filter: invert(0.7);
-  cursor: pointer;
-}
+input[type=time]::-webkit-calendar-picker-indicator { filter: invert(0.7); cursor: pointer; }
 select {
   color: rgba(255,255,255,0.7);
-  cursor: pointer;
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='rgba(255,255,255,0.4)' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='rgba(255,255,255,0.4)' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 12px center;
   padding-right: 32px;
+  cursor: pointer;
 }
-select option { background: #003c6f; color: #fff; }
+select option { background: #003c6f; }
 textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
+input.error, select.error { border-color: rgba(252,129,129,0.6); }
+
+.row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.875rem; }
+.row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.875rem; }
+@media(max-width:560px) { .row-2, .row-3 { grid-template-columns: 1fr; } }
 
 /* RADIO / CHECKBOX */
-.radio-group, .check-group {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-top: 4px;
-}
+.radio-group, .check-group { display: flex; flex-direction: column; gap: 5px; margin-top: 4px; }
 .radio-item, .check-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 9px;
-  font-size: 12.5px;
-  color: var(--muted2);
-  cursor: pointer;
-  line-height: 1.4;
-  padding: 6px 10px;
-  border-radius: 7px;
-  border: 1px solid transparent;
-  transition: background 0.12s, border-color 0.12s;
+  display: flex; align-items: flex-start; gap: 9px;
+  font-size: 12.5px; color: var(--muted2); cursor: pointer;
+  line-height: 1.4; padding: 6px 10px; border-radius: 7px;
+  border: 1px solid transparent; transition: background 0.12s, border-color 0.12s;
 }
 .radio-item:hover, .check-item:hover {
   background: rgba(255,255,255,0.05);
   border-color: rgba(255,255,255,0.1);
 }
 .radio-item input, .check-item input {
-  flex-shrink: 0;
-  width: 15px;
-  height: 15px;
-  margin-top: 1px;
-  accent-color: #204e99;
-  cursor: pointer;
+  flex-shrink: 0; width: 15px; height: 15px; margin-top: 1px;
+  accent-color: var(--accent); cursor: pointer;
 }
-.check-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4px 8px;
-  margin-top: 4px;
-}
-@media (max-width: 500px) { .check-grid { grid-template-columns: 1fr; } }
+.check-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3px 8px; margin-top: 4px; }
+@media(max-width:480px) { .check-grid { grid-template-columns: 1fr; } }
 
-/* SUBMIT */
-.submit-wrap {
-  margin-top: 2.5rem;
-  text-align: center;
-}
-.submit-btn {
-  background: var(--accent);
-  color: var(--white);
-  border: none;
-  border-radius: 12px;
-  padding: 1rem 3rem;
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
-  font-family: inherit;
-  transition: opacity 0.2s, transform 0.1s;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-.submit-btn:hover { opacity: 0.9; }
-.submit-btn:active { transform: scale(0.98); }
-.submit-note {
-  font-size: 11px;
-  color: var(--muted3);
-  margin-top: 0.75rem;
-}
-
-/* VALIDATION */
-input:invalid:not(:placeholder-shown),
-select:invalid {
-  border-color: rgba(252,129,129,0.5);
-}
-.field-error {
-  font-size: 10.5px;
-  color: #fc8181;
-  display: none;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-
+/* SELECT ALL BUTTON */
 .select-all-btn {
-  background: none;
-  border: 1px solid rgba(255,255,255,0.2);
-  border-radius: 6px;
-  color: rgba(255,255,255,0.5);
-  font-size: 10.5px;
-  font-weight: 600;
-  padding: 3px 10px;
-  cursor: pointer;
-  font-family: inherit;
+  background: none; border: 1px solid rgba(255,255,255,0.2); border-radius: 6px;
+  color: rgba(255,255,255,0.5); font-size: 10px; font-weight: 600; padding: 2px 10px;
+  cursor: pointer; font-family: inherit; margin-bottom: 6px; transition: all 0.15s;
+}
+.select-all-btn:hover { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.8); }
+.select-all-btn.all-selected { background: rgba(32,78,153,0.4); border-color: var(--accent); color: #fff; }
+
+/* NOTES ANALYSIS */
+.analysis-loading {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 12px; color: var(--muted); padding: 8px 0;
+}
+.analysis-spinner {
+  width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.15);
+  border-top-color: rgba(255,255,255,0.6); border-radius: 50%;
+  animation: spin 0.9s linear infinite; flex-shrink: 0;
+}
+.instruction-row {
+  display: flex; align-items: flex-start; gap: 8px; padding: 7px 10px;
+  background: rgba(255,255,255,0.05); border-radius: 8px; margin-bottom: 5px;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+.instruction-row.ignored { opacity: 0.45; }
+.instr-btns { display: flex; gap: 3px; flex-shrink: 0; margin-top: 1px; }
+.instr-btn {
+  font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 4px;
+  border: none; cursor: pointer; font-family: inherit;
+}
+.instr-btn.use { background: var(--accent); color: #fff; }
+.instr-btn.ignore { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.5); }
+.instr-text { font-size: 12px; color: var(--muted2); line-height: 1.5; flex: 1; }
+.conflict-note { font-size: 11px; color: var(--amber); margin-top: 3px; }
+
+/* SUMMARY */
+.summary-section { margin-bottom: 1rem; }
+.summary-label {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--muted); border-bottom: 1px solid var(--border2); padding-bottom: 4px;
   margin-bottom: 8px;
-  transition: all 0.15s;
-  letter-spacing: 0.04em;
 }
-.select-all-btn:hover {
-  background: rgba(255,255,255,0.08);
-  color: rgba(255,255,255,0.8);
-  border-color: rgba(255,255,255,0.35);
+.summary-row { display: flex; justify-content: space-between; font-size: 12.5px; margin-bottom: 4px; }
+.summary-key { color: var(--muted); }
+.summary-val { color: var(--white); font-weight: 500; text-align: right; max-width: 65%; }
+
+/* WELCOME BULLETS */
+.welcome-item {
+  display: flex; gap: 10px; align-items: flex-start; margin-bottom: 10px;
 }
-.select-all-btn.all-selected {
-  background: rgba(32,78,153,0.4);
-  border-color: #204e99;
-  color: #fff;
+.welcome-num {
+  width: 22px; height: 22px; border-radius: 50%; background: var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; flex-shrink: 0; margin-top: 1px;
 }
+.welcome-text { font-size: 13px; color: var(--muted2); line-height: 1.55; }
+.welcome-text strong { color: var(--white); }
+
+/* ERROR / GATING */
+.gate-error {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; min-height: 60vh; gap: 1rem; text-align: center; padding: 2rem;
+}
+.gate-error-title { font-size: 16px; font-weight: 600; color: var(--red); }
+.gate-error-msg { font-size: 13px; color: var(--muted); max-width: 400px; line-height: 1.6; }
+
+/* LOADING */
+.loading-wrap {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; min-height: 50vh; gap: 1.25rem;
+}
+.loading-spinner {
+  width: 40px; height: 40px; border: 3px solid rgba(255,255,255,0.15);
+  border-top-color: rgba(255,255,255,0.7); border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+}
+.loading-text { font-size: 14px; color: var(--muted); }
+.loading-sub { font-size: 12px; color: rgba(255,255,255,0.35); }
+
+@keyframes spin { to { transform: rotate(360deg); } }
 </style>
 </head>
 <body>
 
-<!-- HEADER -->
 <div class="header">
   <img src="data:image/jpeg;base64,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" alt="QT2 Systems" class="header-logo" />
   <div class="header-text">
@@ -269,689 +312,616 @@ select:invalid {
   </div>
 </div>
 
-<!-- INTRO -->
-<div class="intro">
-  <p>This form takes about 3 minutes. Once you submit, your personalized carb-loading plan generates instantly — day-by-day, meal-by-meal, with exact portions built for your body weight, race duration, and food preferences.</p>
-  <p>
-    <strong>A few things before you start:</strong> Be honest about your cooking situation — it changes the entire plan. Check only foods you'd actually eat. Use your realistic expected finish time, not your goal. Your plan is built specifically for your body weight — don't share it or adjust it on your own.
-  </p>
-</div>
-
-<!-- TOKEN CHECKING STATE -->
-<div id="token-checking" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:40vh;gap:1rem;">
-  <div style="width:36px;height:36px;border:3px solid rgba(255,255,255,0.15);border-top-color:rgba(255,255,255,0.7);border-radius:50%;animation:spin 0.9s linear infinite;"></div>
-  <div style="font-size:14px;color:rgba(255,255,255,0.5);">Verifying your access link…</div>
-</div>
-
-<!-- TOKEN ERROR STATE -->
-<div id="token-error" style="display:none;flex-direction:column;align-items:center;justify-content:center;min-height:40vh;gap:1rem;padding:2rem;text-align:center;">
-  <div style="font-size:16px;font-weight:600;color:#fc8181;">Access Link Invalid</div>
-  <div id="token-error-msg" style="font-size:13px;color:rgba(255,255,255,0.5);max-width:420px;line-height:1.6;"></div>
-  <div style="font-size:12px;color:rgba(255,255,255,0.3);">Questions? Email us at services@qt2systems.com</div>
-</div>
-
-<!-- FORM -->
-<div class="form-wrap">
-  <form id="intake-form" novalidate style="display:none;">
-
-    <!-- ATHLETE & RACE INFO -->
-    <div class="section-label">Athlete &amp; Race Info</div>
-
-    <div class="row-2">
-      <div class="field">
-        <label class="field-label" for="athlete_name">Athlete Name <span class="req">*</span></label>
-        <input type="text" id="athlete_name" name="athlete_name" placeholder="First Last" required />
-      </div>
-      <div class="field">
-        <label class="field-label" for="race_name">Race Name <span class="req">*</span></label>
-        <input type="text" id="race_name" name="race_name" placeholder="e.g. IM 70.3 Western Mass" required />
-      </div>
-    </div>
-
-    <div class="row-2">
-      <div class="field">
-        <label class="field-label" for="race_type">Race Type <span class="req">*</span></label>
-        <select id="race_type" name="race_type" required>
-          <option value="" disabled selected>Select race type…</option>
-          <option>Triathlon (Full Ironman)</option>
-          <option>Triathlon 70.3</option>
-          <option>Olympic Triathlon</option>
-          <option>Marathon</option>
-          <option>Half Marathon</option>
-          <option>Gravel / Road Century (100+ miles)</option>
-          <option>Other</option>
-        </select>
-      </div>
-      <div class="field">
-        <label class="field-label" for="race_date">Race Date <span class="req">*</span></label>
-        <input type="date" id="race_date" name="race_date" required />
-      </div>
-    </div>
-
-    <div class="row-3">
-      <div class="field">
-        <label class="field-label" for="race_start_time">Race Start Time <span class="req">*</span></label>
-        <input type="time" id="race_start_time" name="race_start_time" required />
-      </div>
-      <div class="field">
-        <label class="field-label" for="expected_finish_time">Expected Finish Time <span class="req">*</span></label>
-        <input type="text" id="expected_finish_time" name="expected_finish_time" placeholder="e.g. 4:30 or 4.5" required />
-        <div class="field-hint">Realistic finish — not goal time</div>
-      </div>
-      <div class="field">
-        <label class="field-label" for="body_weight_lbs">Body Weight (lbs) <span class="req">*</span></label>
-        <input type="number" id="body_weight_lbs" name="body_weight_lbs" placeholder="168" min="80" max="400" required />
-      </div>
-    </div>
-
-    <!-- LOGISTICS -->
-    <div class="section-label">Logistics</div>
-
-    <div class="field">
-      <label class="field-label">Cooking Situation <span class="req">*</span></label>
-      <div class="radio-group">
-        <label class="radio-item">
-          <input type="radio" name="cooking_situation" value="restaurant" required />
-          Eating at restaurants — full menu available
-        </label>
-        <label class="radio-item">
-          <input type="radio" name="cooking_situation" value="full_kitchen" />
-          Full kitchen available (home, rental, or hotel suite)
-        </label>
-        <label class="radio-item">
-          <input type="radio" name="cooking_situation" value="microwave" />
-          Hotel room with microwave only (no stovetop)
-        </label>
-        <label class="radio-item">
-          <input type="radio" name="cooking_situation" value="no_cook" />
-          No cooking available — grocery / room temperature foods only
-        </label>
-      </div>
-    </div>
-
-    <div class="field">
-      <label class="field-label">GI Sensitivity <span class="req">*</span></label>
-      <div class="field-hint">How does your stomach typically respond to high-carbohydrate foods during race week?</div>
-      <div class="radio-group">
-        <label class="radio-item">
-          <input type="radio" name="gi_sensitivity" value="Normal" required />
-          Normal — no issues with carb-loading
-        </label>
-        <label class="radio-item">
-          <input type="radio" name="gi_sensitivity" value="Sensitive" />
-          Sensitive — some bloating or GI discomfort
-        </label>
-        <label class="radio-item">
-          <input type="radio" name="gi_sensitivity" value="Very Sensitive" />
-          Very Sensitive — significant GI issues, need conservative approach
-        </label>
-      </div>
-    </div>
-
-    <div class="field">
-      <label class="field-label">Race Morning Top-Up Preference <span class="req">*</span></label>
-      <div class="field-hint">60 minutes before your race start — choose your preferred format.</div>
-      <div class="radio-group">
-        <label class="radio-item">
-          <input type="radio" name="topup_format" value="solid" required />
-          Solid food — 1 banana + 16 oz sports drink
-        </label>
-        <label class="radio-item">
-          <input type="radio" name="topup_format" value="gel" />
-          Gel — 1 energy gel + 16 oz sports drink
-        </label>
-        <label class="radio-item">
-          <input type="radio" name="topup_format" value="either" />
-          Either — show me both options
-        </label>
-      </div>
-    </div>
-
-    <div class="field">
-      <label class="field-label">Preferred Protein Sources</label>
-      <div class="field-hint">We include a small protein source with main meals. Check all you're comfortable with. Leave blank to allow any. Check "No protein" to exclude protein entirely.</div>
-      <div class="check-grid" style="margin-top:6px;">
-        <label class="check-item"><input type="checkbox" name="preferred_proteins" value="Scrambled eggs" /> Scrambled eggs</label>
-        <label class="check-item"><input type="checkbox" name="preferred_proteins" value="Hard boiled eggs" /> Hard boiled eggs</label>
-        <label class="check-item"><input type="checkbox" name="preferred_proteins" value="Grilled chicken breast" /> Grilled chicken breast</label>
-        <label class="check-item"><input type="checkbox" name="preferred_proteins" value="Canned tuna" /> Canned tuna</label>
-        <label class="check-item"><input type="checkbox" name="preferred_proteins" value="Turkey slices" /> Turkey slices</label>
-        <label class="check-item"><input type="checkbox" name="preferred_proteins" value="Whey protein shake" /> Whey protein shake</label>
-        <label class="check-item"><input type="checkbox" name="preferred_proteins" value="Plant-based protein shake" /> Plant-based protein shake</label>
-        <label class="check-item"><input type="checkbox" name="preferred_proteins" value="No protein" id="no-protein-cb" /> No protein — carbs only</label>
-      </div>
-    </div>
-
-    <div class="row-2">
-      <div class="field">
-        <label class="field-label" for="dietary_restrictions">Dietary Restrictions</label>
-        <input type="text" id="dietary_restrictions" name="dietary_restrictions" placeholder="e.g. gluten-free, lactose intolerant, vegetarian" />
-      </div>
-      <div class="field">
-        <label class="field-label" for="foods_never_include">Foods to NEVER Include</label>
-        <input type="text" id="foods_never_include" name="foods_never_include" placeholder="Any foods to fully exclude from the plan" />
-      </div>
-    </div>
-
-    <!-- FOOD PREFERENCES -->
-    <div class="section-label">Food Preferences <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:9px;color:rgba(255,255,255,0.3);">— Check all you'd eat. Leave blank to allow any.</span></div>
-
-    <div class="field">
-      <label class="field-label">Approved Breakfast Foods</label>
-      <button type="button" class="select-all-btn" id="select-all-breakfast" onclick="toggleSelectAll('foods_breakfast', 'select-all-breakfast')">Select All</button>
-      <div class="check-grid">
-        <label class="check-item"><input type="checkbox" name="foods_breakfast" value="Pancakes" /> Pancakes</label>
-        <label class="check-item"><input type="checkbox" name="foods_breakfast" value="Waffles" /> Waffles</label>
-        <label class="check-item"><input type="checkbox" name="foods_breakfast" value="French toast" /> French toast</label>
-        <label class="check-item"><input type="checkbox" name="foods_breakfast" value="White toast" /> White toast</label>
-        <label class="check-item"><input type="checkbox" name="foods_breakfast" value="Bagel" /> Bagel</label>
-        <label class="check-item"><input type="checkbox" name="foods_breakfast" value="English muffin" /> English muffin</label>
-        <label class="check-item"><input type="checkbox" name="foods_breakfast" value="Oatmeal" /> Oatmeal</label>
-        <label class="check-item"><input type="checkbox" name="foods_breakfast" value="Cream of wheat" /> Cream of wheat</label>
-        <label class="check-item"><input type="checkbox" name="foods_breakfast" value="White rice" /> White rice</label>
-        <label class="check-item"><input type="checkbox" name="foods_breakfast" value="Hash browns" /> Hash browns</label>
-        <label class="check-item"><input type="checkbox" name="foods_breakfast" value="Banana" /> Banana</label>
-        <label class="check-item"><input type="checkbox" name="foods_breakfast" value="Applesauce cup" /> Applesauce cup</label>
-        <label class="check-item"><input type="checkbox" name="foods_breakfast" value="Instant oatmeal packets" /> Instant oatmeal packets</label>
-        <label class="check-item"><input type="checkbox" name="foods_breakfast" value="Microwaveable rice pouch" /> Microwaveable rice pouch</label>
-        <label class="check-item"><input type="checkbox" name="foods_breakfast" value="Corn flakes" /> Corn flakes</label>
-        <label class="check-item"><input type="checkbox" name="foods_breakfast" value="Orange juice" /> Orange juice</label>
-      </div>
-    </div>
-      <div class="field" style="margin-top:0.5rem;">
-        <label class="field-label">Custom Breakfast Foods <span style="font-size:10px;font-weight:400;color:rgba(255,255,255,0.4);">— optional</span></label>
-        <div class="field-hint">Add foods not listed above. Format: <em>Food name, serving size, CHO per serving</em> — one per line. CHO is optional; leave blank and we'll estimate it.<br>Example: <em>GF bread, 2 slices, 24g</em> &nbsp;or&nbsp; <em>Rice Krispie treat, 1 bar</em></div>
-        <textarea name="foods_breakfast_custom" placeholder="GF bread, 2 slices, 24g&#10;Rice cake with honey, 1 cake&#10;Homemade energy ball, 1 ball, 30g" style="margin-top:6px;min-height:72px;font-size:12px;"></textarea>
-      </div>
-
-    <div class="field">
-      <label class="field-label">Approved Lunch / Dinner Foods</label>
-      <button type="button" class="select-all-btn" id="select-all-lunch" onclick="toggleSelectAll('foods_lunch_dinner', 'select-all-lunch')">Select All</button>
-      <div class="check-grid">
-        <label class="check-item"><input type="checkbox" name="foods_lunch_dinner" value="White rice" /> White rice</label>
-        <label class="check-item"><input type="checkbox" name="foods_lunch_dinner" value="Pasta (marinara)" /> Pasta (marinara)</label>
-        <label class="check-item"><input type="checkbox" name="foods_lunch_dinner" value="Baked potato" /> Baked potato</label>
-        <label class="check-item"><input type="checkbox" name="foods_lunch_dinner" value="Mashed potatoes" /> Mashed potatoes</label>
-        <label class="check-item"><input type="checkbox" name="foods_lunch_dinner" value="White rolls" /> White rolls</label>
-        <label class="check-item"><input type="checkbox" name="foods_lunch_dinner" value="Dinner roll" /> Dinner roll</label>
-        <label class="check-item"><input type="checkbox" name="foods_lunch_dinner" value="Turkey sandwich on white bread" /> Turkey sandwich on white bread</label>
-        <label class="check-item"><input type="checkbox" name="foods_lunch_dinner" value="Teriyaki bowl" /> Teriyaki bowl</label>
-        <label class="check-item"><input type="checkbox" name="foods_lunch_dinner" value="Cheese pizza" /> Cheese pizza</label>
-        <label class="check-item"><input type="checkbox" name="foods_lunch_dinner" value="Canned soup" /> Canned soup</label>
-        <label class="check-item"><input type="checkbox" name="foods_lunch_dinner" value="Microwaveable rice pouch" /> Microwaveable rice pouch</label>
-        <label class="check-item"><input type="checkbox" name="foods_lunch_dinner" value="Instant mashed potatoes" /> Instant mashed potatoes</label>
-        <label class="check-item"><input type="checkbox" name="foods_lunch_dinner" value="White bread sandwich" /> White bread sandwich</label>
-      </div>
-    </div>
-      <div class="field" style="margin-top:0.5rem;">
-        <label class="field-label">Custom Lunch/Dinner Foods <span style="font-size:10px;font-weight:400;color:rgba(255,255,255,0.4);">— optional</span></label>
-        <div class="field-hint">Add foods not listed above. Format: <em>Food name, serving size, CHO per serving</em> — one per line. CHO is optional; leave blank and we'll estimate it.<br>Example: <em>GF bread, 2 slices, 24g</em> &nbsp;or&nbsp; <em>Rice Krispie treat, 1 bar</em></div>
-        <textarea name="foods_lunch_dinner_custom" placeholder="GF bread, 2 slices, 24g&#10;Rice cake with honey, 1 cake&#10;Homemade energy ball, 1 ball, 30g" style="margin-top:6px;min-height:72px;font-size:12px;"></textarea>
-      </div>
-
-    <div class="field">
-      <label class="field-label">Approved Snack Foods</label>
-      <button type="button" class="select-all-btn" id="select-all-snacks" onclick="toggleSelectAll('foods_snacks', 'select-all-snacks')">Select All</button>
-      <div class="check-grid">
-        <label class="check-item"><input type="checkbox" name="foods_snacks" value="Pretzels" /> Pretzels</label>
-        <label class="check-item"><input type="checkbox" name="foods_snacks" value="Fat-free fig newtons" /> Fat-free fig newtons</label>
-        <label class="check-item"><input type="checkbox" name="foods_snacks" value="Animal crackers" /> Animal crackers</label>
-        <label class="check-item"><input type="checkbox" name="foods_snacks" value="Graham crackers" /> Graham crackers</label>
-        <label class="check-item"><input type="checkbox" name="foods_snacks" value="Saltines" /> Saltines</label>
-        <label class="check-item"><input type="checkbox" name="foods_snacks" value="Rice cakes" /> Rice cakes</label>
-        <label class="check-item"><input type="checkbox" name="foods_snacks" value="Applesauce cup" /> Applesauce cup</label>
-        <label class="check-item"><input type="checkbox" name="foods_snacks" value="Banana" /> Banana</label>
-        <label class="check-item"><input type="checkbox" name="foods_snacks" value="White bread with honey" /> White bread with honey</label>
-        <label class="check-item"><input type="checkbox" name="foods_snacks" value="Bagel with jam" /> Bagel with jam</label>
-        <label class="check-item"><input type="checkbox" name="foods_snacks" value="Low-fat granola bar" /> Low-fat granola bar</label>
-        <label class="check-item"><input type="checkbox" name="foods_snacks" value="Dried mango" /> Dried mango</label>
-        <label class="check-item"><input type="checkbox" name="foods_snacks" value="Gummy bears" /> Gummy bears / fruit snacks</label>
-        <label class="check-item"><input type="checkbox" name="foods_snacks" value="Gatorade" /> Gatorade</label>
-      </div>
-    </div>
-      <div class="field" style="margin-top:0.5rem;">
-        <label class="field-label">Custom Snack Foods <span style="font-size:10px;font-weight:400;color:rgba(255,255,255,0.4);">— optional</span></label>
-        <div class="field-hint">Add foods not listed above. Format: <em>Food name, serving size, CHO per serving</em> — one per line. CHO is optional; leave blank and we'll estimate it.<br>Example: <em>GF bread, 2 slices, 24g</em> &nbsp;or&nbsp; <em>Rice Krispie treat, 1 bar</em></div>
-        <textarea name="foods_snacks_custom" placeholder="GF bread, 2 slices, 24g&#10;Rice cake with honey, 1 cake&#10;Homemade energy ball, 1 ball, 30g" style="margin-top:6px;min-height:72px;font-size:12px;"></textarea>
-      </div>
-
-    <div class="field">
-      <label class="field-label">Approved Race Morning Foods</label>
-      <button type="button" class="select-all-btn" id="select-all-race" onclick="toggleSelectAll('foods_race_morning', 'select-all-race')">Select All</button>
-      <div class="check-grid">
-        <label class="check-item"><input type="checkbox" name="foods_race_morning" value="Applesauce cup" /> Applesauce cup</label>
-        <label class="check-item"><input type="checkbox" name="foods_race_morning" value="Banana" /> Banana</label>
-        <label class="check-item"><input type="checkbox" name="foods_race_morning" value="White rice" /> White rice</label>
-        <label class="check-item"><input type="checkbox" name="foods_race_morning" value="Cream of rice" /> Cream of rice</label>
-        <label class="check-item"><input type="checkbox" name="foods_race_morning" value="Instant oatmeal" /> Instant oatmeal</label>
-        <label class="check-item"><input type="checkbox" name="foods_race_morning" value="White toast with honey" /> White toast with honey</label>
-        <label class="check-item"><input type="checkbox" name="foods_race_morning" value="Bagel with honey" /> Bagel with honey</label>
-        <label class="check-item"><input type="checkbox" name="foods_race_morning" value="Rice cakes with honey" /> Rice cakes with honey</label>
-        <label class="check-item"><input type="checkbox" name="foods_race_morning" value="Gatorade" /> Gatorade</label>
-        <label class="check-item"><input type="checkbox" name="foods_race_morning" value="Apple juice" /> Apple juice</label>
-        <label class="check-item"><input type="checkbox" name="foods_race_morning" value="White grape juice" /> White grape juice</label>
-      </div>
-    </div>
-
-
-      <div class="field" style="margin-top:0.5rem;">
-        <label class="field-label">Custom Race Morning Foods <span style="font-size:10px;font-weight:400;color:rgba(255,255,255,0.4);">— optional</span></label>
-        <div class="field-hint">Add foods not listed above. Format: <em>Food name, serving size, CHO per serving</em> — one per line. CHO is optional; leave blank and we'll estimate it.<br>Example: <em>GF bread, 2 slices, 24g</em> &nbsp;or&nbsp; <em>Rice Krispie treat, 1 bar</em></div>
-        <textarea name="foods_race_morning_custom" placeholder="GF bread, 2 slices, 24g&#10;Rice cake with honey, 1 cake&#10;Homemade energy ball, 1 ball, 30g" style="margin-top:6px;min-height:72px;font-size:12px;"></textarea>
-      </div>
-
-    <!-- ADDITIONAL NOTES -->
-    <div class="section-label">Additional Notes</div>
-    <div class="field">
-      <textarea id="additional_notes" name="additional_notes" placeholder="Hotel situation, travel constraints, past race nutrition experience, anything else we should know…" onblur="analyzeNotes()"></textarea>
-    </div>
-
-    <!-- NOTES ANALYSIS PANEL -->
-    <div id="notes-analysis-wrap" style="display:none;">
-      <div id="notes-analyzing" style="display:none;font-size:12px;color:rgba(255,255,255,0.5);padding:8px 0;display:flex;align-items:center;gap:8px;">
-        <div style="width:14px;height:14px;border:2px solid rgba(255,255,255,0.15);border-top-color:rgba(255,255,255,0.6);border-radius:50%;animation:spin 0.9s linear infinite;flex-shrink:0;"></div>
-        Analyzing your notes…
-      </div>
-      <div id="notes-instructions-wrap" style="display:none;">
-        <div style="font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:rgba(255,255,255,0.4);margin-bottom:8px;">We extracted these instructions from your notes — toggle any you'd like to ignore:</div>
-        <div id="notes-instructions-list"></div>
-        <div id="notes-conflicts-wrap" style="display:none;margin-top:12px;">
-          <div style="font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#f2c94c;margin-bottom:8px;">⚠ Conflicts detected — please resolve:</div>
-          <div id="notes-conflicts-list"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- SUBMIT -->
-    <div class="submit-wrap">
-      <button type="submit" class="submit-btn">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-          <path d="M3 8h10M9 4l4 4-4 4" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        Generate My Carb-Loading Plan
-      </button>
-      <div class="submit-note">Your plan generates instantly after submission</div>
-    </div>
-
-  </form>
+<div class="wizard-outer" id="wizard-outer">
+  <!-- Content injected by JS -->
 </div>
 
 <script>
-function toggleSelectAll(groupName, btnId) {
-  var checkboxes = document.querySelectorAll('input[name="' + groupName + '"]');
-  var btn = document.getElementById(btnId);
-  var allChecked = Array.from(checkboxes).every(function(cb) { return cb.checked; });
-  checkboxes.forEach(function(cb) { cb.checked = !allChecked; });
+var WORKER_URL = "https://qt2-carb-loader-agent.jesse-477.workers.dev";
+var OUTPUT_URL = "https://carb-loading.qt2systems.com/qt2_carbload_output.html";
+
+// ── STATE ──
+var S = {
+  step: 0,
+  purchaseToken: null,
+  firstName: '',
+  // Form data
+  athlete_name: '', race_name: '', race_type: '', race_date: '',
+  race_start_time: '', expected_finish_time: '', body_weight_lbs: '',
+  cooking_situation: '', gi_sensitivity: '', topup_format: '',
+  preferred_proteins: [],
+  dietary_restrictions: '', foods_never_include: '',
+  foods_breakfast: [], foods_lunch_dinner: [], foods_snacks: [], foods_race_morning: [],
+  foods_breakfast_custom: '', foods_lunch_dinner_custom: '',
+  foods_snacks_custom: '', foods_race_morning_custom: '',
+  additional_notes: '',
+  notes_instructions: [], // confirmed line-item instructions
+  _notesAnalyzed: false,
+  _lastNotes: '',
+};
+
+// ── STEP DEFINITIONS ──
+var STEPS = [
+  'welcome', 'race_info', 'logistics', 'dietary',
+  'foods_breakfast', 'foods_lunch_dinner', 'foods_snacks', 'foods_race_morning',
+  'notes', 'summary', 'generate'
+];
+var STEP_LABELS = [
+  'Welcome', 'Race Info', 'Logistics', 'Dietary',
+  'Breakfast', 'Lunch & Dinner', 'Snacks', 'Race Morning',
+  'Notes', 'Review', 'Generate'
+];
+
+// ── FOOD LISTS ──
+var FOODS = {
+  breakfast: [
+    'Pancakes','Waffles','French toast','White toast','Bagel','English muffin',
+    'Oatmeal','Cream of wheat','White rice','Hash browns','Banana','Fruit cup',
+    'Orange juice','Instant oatmeal packets','Microwaveable rice pouch','Applesauce cup','Corn flakes'
+  ],
+  lunch_dinner: [
+    'White rice','Pasta (marinara)','Baked potato','Mashed potatoes','White rolls',
+    'Dinner roll','Turkey sandwich on white bread','Teriyaki bowl','Cheese pizza',
+    'Canned soup','Microwaveable rice pouch','Instant mashed potatoes','White bread sandwich'
+  ],
+  snacks: [
+    'Pretzels','Fat-free fig newtons','Animal crackers','Graham crackers','Saltines',
+    'Rice cakes','Applesauce cup','Banana','White bread with honey','Bagel with jam',
+    'Low-fat granola bar','Dried mango','Gummy bears / fruit snacks',
+    'Baked Lays (1.125 oz bag)','Gatorade'
+  ],
+  race_morning: [
+    'Applesauce cup','Banana','White rice','Cream of rice','Instant oatmeal',
+    'White toast with honey','Bagel with honey','Rice cakes with honey',
+    'Gatorade','Apple juice','White grape juice'
+  ]
+};
+
+var MICROWAVE_FOODS = {
+  breakfast: ['Bagel','White toast','English muffin','Instant oatmeal packets',
+    'Microwaveable rice pouch','Banana','Applesauce cup','Corn flakes','Oatmeal','White rice'],
+  lunch_dinner: ['White rice','Microwaveable rice pouch','Baked potato','White rolls',
+    'Dinner roll','Canned soup','Instant mashed potatoes','White bread sandwich','Mashed potatoes'],
+  snacks: null, // all
+  race_morning: null // all
+};
+
+var NOCOOK_FOODS = {
+  breakfast: ['Bagel','White toast','English muffin','Banana','Applesauce cup',
+    'Corn flakes','Instant oatmeal packets'],
+  lunch_dinner: ['White bread sandwich','White rolls','Canned soup','Applesauce cup'],
+  snacks: null,
+  race_morning: null
+};
+
+// ── RENDER ENGINE ──
+function render() {
+  var outer = document.getElementById('wizard-outer');
+  var stepName = STEPS[S.step];
+
+  // Progress
+  var progressHtml = '';
+  if (S.step > 0 && S.step < STEPS.length - 1) {
+    var pct = Math.round((S.step / (STEPS.length - 2)) * 100);
+    progressHtml = '<div class="progress-wrap">' +
+      '<div class="progress-label"><span>' + STEP_LABELS[S.step] + '</span><span>Step ' + S.step + ' of ' + (STEPS.length - 2) + '</span></div>' +
+      '<div class="progress-track"><div class="progress-fill" style="width:' + pct + '%"></div></div>' +
+      '</div>';
+  }
+
+  var cardHtml = renderStep(stepName);
+  outer.innerHTML = progressHtml + cardHtml;
+
+  // Attach events after render
+  attachEvents(stepName);
+  validateStep(stepName);
+}
+
+function renderStep(name) {
+  switch(name) {
+    case 'welcome':      return renderWelcome();
+    case 'race_info':    return renderRaceInfo();
+    case 'logistics':    return renderLogistics();
+    case 'dietary':      return renderDietary();
+    case 'foods_breakfast':    return renderFoods('breakfast', 'Breakfast Foods', 'foods_breakfast');
+    case 'foods_lunch_dinner': return renderFoods('lunch_dinner', 'Lunch & Dinner Foods', 'foods_lunch_dinner');
+    case 'foods_snacks':       return renderFoods('snacks', 'Snack Foods', 'foods_snacks');
+    case 'foods_race_morning': return renderFoods('race_morning', 'Race Morning Foods', 'foods_race_morning');
+    case 'notes':        return renderNotes();
+    case 'summary':      return renderSummary();
+    case 'generate':     return renderGenerate();
+    default: return '';
+  }
+}
+
+function card(title, subtitle, bodyHtml, footerHtml) {
+  return '<div class="card">' +
+    '<div class="card-header"><div class="card-title">' + title + '</div>' +
+    (subtitle ? '<div class="card-subtitle">' + subtitle + '</div>' : '') +
+    '</div>' +
+    '<div class="card-body">' + bodyHtml + '</div>' +
+    '<div class="card-footer">' + footerHtml + '</div>' +
+    '</div>';
+}
+
+function navButtons(backLabel, nextLabel, nextId, nextDisabled, isGenerate) {
+  var back = S.step > 0
+    ? '<button class="btn-back" onclick="goBack()">' + (backLabel || '← Back') + '</button>'
+    : '<span></span>';
+  var next = isGenerate
+    ? '<button class="btn-generate" id="' + nextId + '" onclick="submitForm()"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="#003c6f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>' + nextLabel + '</button>'
+    : '<button class="btn-next" id="' + nextId + '" onclick="goNext()" ' + (nextDisabled ? 'disabled' : '') + '>' + (nextLabel || 'Next →') + '</button>';
+  return back + next;
+}
+
+// ── STEP RENDERERS ──
+function renderWelcome() {
+  var body = '<div style="padding:0.5rem 0;">' +
+    '<div class="welcome-item"><div class="welcome-num">1</div><div class="welcome-text"><strong>Tell us about your race.</strong> Date, start time, expected finish, and body weight — takes 2 minutes.</div></div>' +
+    '<div class="welcome-item"><div class="welcome-num">2</div><div class="welcome-text"><strong>Tell us your situation.</strong> Where you'll be eating, any GI history, food preferences and restrictions.</div></div>' +
+    '<div class="welcome-item"><div class="welcome-num">3</div><div class="welcome-text"><strong>Select your approved foods.</strong> Check only what you'd actually eat. Leave blank to allow any.</div></div>' +
+    '<div class="welcome-item"><div class="welcome-num">4</div><div class="welcome-text"><strong>Review and finalize.</strong> Your personalized plan generates in about 20 seconds. Review each meal, make changes, then save as PDF or email it to yourself.</div></div>' +
+    '<div style="margin-top:1.25rem;padding:10px 14px;background:rgba(255,255,255,0.05);border-radius:8px;font-size:12px;color:rgba(255,255,255,0.5);line-height:1.6;">Have ready: your race date and start time, expected finish time, body weight, and a sense of your hotel/cooking situation.</div>' +
+    '</div>';
+  return card('Welcome to your carb-loading plan.', 'Built specifically for your body weight, race duration, food preferences, and cooking situation.', body, navButtons(null, 'Let's get started →', 'btn-next-welcome', false));
+}
+
+function renderRaceInfo() {
+  var body =
+    '<div class="row-2">' +
+      field('Athlete Name', 'text', 'athlete_name', S.athlete_name, 'First Last', true) +
+      field('Race Name', 'text', 'race_name', S.race_name, 'e.g. IM 70.3 Western Mass', true) +
+    '</div>' +
+    '<div class="field"><label class="field-label">Race Type <span class="req">*</span></label>' +
+    '<select id="race_type" onchange="save('race_type',this.value)">' +
+    '<option value="" disabled ' + (!S.race_type?'selected':'') + '>Select race type…</option>' +
+    ['Triathlon (Full Ironman)','Triathlon 70.3','Olympic Triathlon','Marathon','Half Marathon','Gravel / Road Century (100+ miles)','Other'].map(function(o){
+      return '<option value="'+o+'" '+(S.race_type===o?'selected':'')+'>'+o+'</option>';
+    }).join('') +
+    '</select></div>' +
+    '<div class="row-2">' +
+      field('Race Date', 'date', 'race_date', S.race_date, '', true) +
+      field('Race Start Time', 'time', 'race_start_time', S.race_start_time, '', true) +
+    '</div>' +
+    '<div class="row-2">' +
+      '<div class="field"><label class="field-label">Expected Finish Time <span class="req">*</span></label>' +
+      '<input type="text" id="expected_finish_time" value="'+S.expected_finish_time+'" placeholder="e.g. 4:30 or 4.5" oninput="save('expected_finish_time',this.value)" />' +
+      '<div class="field-hint">Realistic finish — not your goal time</div></div>' +
+      '<div class="field"><label class="field-label">Body Weight (lbs) <span class="req">*</span></label>' +
+      '<input type="number" id="body_weight_lbs" value="'+S.body_weight_lbs+'" placeholder="168" min="80" max="400" oninput="save('body_weight_lbs',this.value)" />' +
+      '<div class="field-hint">Current weight — accuracy matters</div></div>' +
+    '</div>';
+  return card('Race Information', 'Tell us about your race so we can calculate your exact carbohydrate targets.', body, navButtons(null, null, 'btn-next-race', true));
+}
+
+function field(label, type, id, val, placeholder, required) {
+  return '<div class="field"><label class="field-label">' + label + (required?' <span class="req">*</span>':'') + '</label>' +
+    '<input type="' + type + '" id="' + id + '" value="' + (val||'') + '" placeholder="' + (placeholder||'') + '" oninput="save('' + id + '',this.value)" /></div>';
+}
+
+function renderLogistics() {
+  var cookingOptions = [
+    ['restaurant', 'Eating at restaurants — full menu available'],
+    ['full_kitchen', 'Full kitchen available (home, rental, or hotel suite)'],
+    ['microwave', 'Hotel room with microwave only (no stovetop)'],
+    ['no_cook', 'No cooking available — grocery / room temperature foods only'],
+  ];
+  var giOptions = [
+    ['Normal', 'Normal — no issues with a full carb load'],
+    ['Sensitive', 'Sensitive — some bloating or GI discomfort'],
+    ['Very Sensitive', 'Very Sensitive — significant GI issues during race week'],
+  ];
+  var topupOptions = [
+    ['solid', 'Solid food — 1 banana + 16 oz sports drink'],
+    ['gel', 'Gel — 1 energy gel + 16 oz sports drink'],
+    ['either', 'Either — show me both options'],
+  ];
+  var proteinOptions = [
+    'Scrambled eggs','Hard boiled eggs','Grilled chicken breast','Canned tuna',
+    'Turkey slices','Whey protein shake','Plant-based protein shake','No protein — carbs only'
+  ];
+
+  var body =
+    radioGroup('Cooking Situation', 'cooking_situation', cookingOptions, S.cooking_situation, true) +
+    radioGroup('GI Sensitivity', 'gi_sensitivity', giOptions, S.gi_sensitivity, true,
+      'How does your stomach typically handle high-carbohydrate foods during race week?') +
+    radioGroup('60-Minute Top-Up Preference', 'topup_format', topupOptions, S.topup_format, true,
+      'Choose your preferred format for the top-up 60 minutes before your race start.') +
+    '<div class="field"><label class="field-label">Preferred Protein Sources</label>' +
+    '<div class="field-hint">We include a small protein with main meals. Check what you're comfortable with. Leave blank to allow any.</div>' +
+    '<div class="check-grid" style="margin-top:6px;">' +
+    proteinOptions.map(function(p) {
+      var checked = S.preferred_proteins.indexOf(p) !== -1;
+      return '<label class="check-item"><input type="checkbox" name="preferred_proteins" value="'+p+'" '+(checked?'checked':'')+' onchange="toggleArr('preferred_proteins',''+p+'',this.checked)" /> '+p+'</label>';
+    }).join('') +
+    '</div></div>';
+
+  return card('Logistics', 'Help us understand your race week situation so we can build the right plan.', body, navButtons(null, null, 'btn-next-logistics', true));
+}
+
+function radioGroup(label, name, options, current, required, hint) {
+  return '<div class="field"><label class="field-label">' + label + (required?' <span class="req">*</span>':'') + '</label>' +
+    (hint ? '<div class="field-hint" style="margin-bottom:6px;">' + hint + '</div>' : '') +
+    '<div class="radio-group">' +
+    options.map(function(o) {
+      return '<label class="radio-item"><input type="radio" name="' + name + '" value="' + o[0] + '" ' +
+        (current===o[0]?'checked':'') + ' onchange="save('' + name + '',this.value);validateStep(STEPS[S.step])" /> ' + o[1] + '</label>';
+    }).join('') +
+    '</div></div>';
+}
+
+function renderDietary() {
+  var body =
+    '<div class="field"><label class="field-label">Dietary Restrictions</label>' +
+    '<input type="text" id="dietary_restrictions" value="'+escHtml(S.dietary_restrictions)+'" placeholder="e.g. gluten-free, lactose intolerant, vegetarian — leave blank if none" oninput="save('dietary_restrictions',this.value)" />' +
+    '<div class="field-hint">These are applied as absolute constraints throughout your entire plan.</div></div>' +
+    '<div class="field"><label class="field-label">Foods to NEVER Include</label>' +
+    '<input type="text" id="foods_never_include" value="'+escHtml(S.foods_never_include)+'" placeholder="e.g. no bananas, no oatmeal — leave blank if none" oninput="save('foods_never_include',this.value)" />' +
+    '<div class="field-hint">These foods will not appear anywhere in your plan, including alternatives.</div></div>';
+  return card('Dietary Restrictions', 'Tell us about any foods you cannot or will not eat. These are hard constraints — not suggestions.', body, navButtons(null, null, 'btn-next-dietary', false));
+}
+
+function renderFoods(section, title, stateKey) {
+  var allFoods = FOODS[section];
+  var allowed = null;
+  if (S.cooking_situation === 'microwave' && MICROWAVE_FOODS[section]) allowed = MICROWAVE_FOODS[section];
+  if (S.cooking_situation === 'no_cook' && NOCOOK_FOODS[section]) allowed = NOCOOK_FOODS[section];
+
+  var selected = S[stateKey] || [];
+  var customKey = stateKey + '_custom';
+  var customVal = S[customKey] || '';
+
+  var checkboxes = allFoods.map(function(food) {
+    if (allowed && allowed.indexOf(food) === -1) return '';
+    var checked = selected.indexOf(food) !== -1;
+    return '<label class="check-item"><input type="checkbox" name="'+stateKey+'" value="'+food+'" '+(checked?'checked':'')+' onchange="toggleArr(''+stateKey+'',''+food+'',this.checked)" /> '+food+'</label>';
+  }).join('');
+
+  var selectAllId = 'sa-' + stateKey;
+  var allChecked = (allowed || allFoods).filter(function(f){ return !allowed || allowed.indexOf(f)!==-1; }).every(function(f){ return selected.indexOf(f)!==-1; });
+
+  var body =
+    '<div class="field-hint" style="margin-bottom:10px;">Check all you'd be comfortable eating. Leave blank to allow any from this category.</div>' +
+    '<button class="select-all-btn '+(allChecked?'all-selected':'')+'" id="'+selectAllId+'" onclick="selectAll(''+stateKey+'',''+selectAllId+'',this)">'+(allChecked?'Deselect All':'Select All')+'</button>' +
+    '<div class="check-grid">' + checkboxes + '</div>' +
+    '<div class="field" style="margin-top:1rem;">' +
+    '<label class="field-label">Custom Foods <span style="font-size:10px;font-weight:400;color:rgba(255,255,255,0.35);">— optional</span></label>' +
+    '<div class="field-hint">Format: <em>Food name, serving size, CHO per serving</em> — one per line. CHO optional (we'll estimate if blank).<br>Example: <em>GF bread, 2 slices, 24g</em></div>' +
+    '<textarea id="'+customKey+'" placeholder="GF bread, 2 slices, 24g&#10;Rice cake with honey, 1 cake" style="margin-top:6px;min-height:60px;" onchange="save(''+customKey+'',this.value)">'+escHtml(customVal)+'</textarea>' +
+    '</div>';
+
+  return card(title, null, body, navButtons(null, null, 'btn-next-foods', false));
+}
+
+function renderNotes() {
+  var body =
+    '<div class="field">' +
+    '<label class="field-label">Additional Notes</label>' +
+    '<div class="field-hint" style="margin-bottom:6px;">Describe your cooking situation in detail, any past race nutrition experience, food preferences, or anything else that should influence your plan. If your situation is mixed (e.g. some restaurant meals, some hotel room), describe it here.</div>' +
+    '<textarea id="additional_notes" placeholder="e.g. I'll be eating all dinners and the day-before breakfast at restaurants. All other meals from a hotel room with a microwave.&#10;&#10;I've had GI issues in past Ironman races — I want a conservative approach." style="min-height:100px;" onblur="analyzeNotes()" oninput="save('additional_notes',this.value)">'+escHtml(S.additional_notes)+'</textarea>' +
+    '</div>' +
+    '<div id="notes-analysis-area"></div>';
+
+  return card('Additional Notes', 'Optional but recommended — the more context you give us, the better the plan.', body, navButtons(null, null, 'btn-next-notes', false));
+}
+
+function renderSummary() {
+  var rows = [
+    ['Athlete', S.athlete_name],
+    ['Race', S.race_name + (S.race_type ? ' · ' + S.race_type : '')],
+    ['Date', S.race_date + (S.race_start_time ? ' at ' + S.race_start_time : '')],
+    ['Expected Finish', S.expected_finish_time + ' hrs'],
+    ['Body Weight', S.body_weight_lbs + ' lbs'],
+  ];
+  var logRows = [
+    ['Cooking Situation', S.cooking_situation.replace('_',' ')],
+    ['GI Sensitivity', S.gi_sensitivity],
+    ['Top-Up Preference', S.topup_format],
+    ['Preferred Proteins', S.preferred_proteins.length ? S.preferred_proteins.join(', ') : 'Any'],
+  ];
+  var dietRows = [
+    ['Dietary Restrictions', S.dietary_restrictions || 'None'],
+    ['Never Include', S.foods_never_include || 'None'],
+  ];
+  var foodRows = [
+    ['Breakfast', S.foods_breakfast.length ? S.foods_breakfast.join(', ') : 'Any'],
+    ['Lunch/Dinner', S.foods_lunch_dinner.length ? S.foods_lunch_dinner.join(', ') : 'Any'],
+    ['Snacks', S.foods_snacks.length ? S.foods_snacks.join(', ') : 'Any'],
+    ['Race Morning', S.foods_race_morning.length ? S.foods_race_morning.join(', ') : 'Any'],
+  ];
+
+  function summarySection(title, rowArr) {
+    return '<div class="summary-section"><div class="summary-label">'+title+'</div>' +
+      rowArr.map(function(r){ return '<div class="summary-row"><span class="summary-key">'+r[0]+'</span><span class="summary-val">'+escHtml(r[1]||'—')+'</span></div>'; }).join('') +
+      '</div>';
+  }
+
+  var confirmedNotes = S.notes_instructions.filter(function(i){ return i.confirmed; });
+  var notesHtml = confirmedNotes.length
+    ? '<div class="summary-section"><div class="summary-label">Confirmed Instructions from Notes</div>' +
+      confirmedNotes.map(function(i){ return '<div class="summary-row"><span class="summary-key">•</span><span class="summary-val">'+escHtml(i.instruction)+'</span></div>'; }).join('') +
+      '</div>'
+    : '';
+
+  var body = summarySection('Race', rows) + summarySection('Logistics', logRows) +
+    summarySection('Dietary', dietRows) + summarySection('Food Preferences', foodRows) + notesHtml +
+    '<div style="margin-top:1rem;font-size:12px;color:rgba(255,255,255,0.4);">Need to change something? Use the Back button to go back to any step.</div>';
+
+  return card('Review Your Inputs', 'Everything look right? Hit Generate to build your personalized plan.', body,
+    navButtons(null, 'Generate My Plan →', 'btn-generate', false, true));
+}
+
+function renderGenerate() {
+  return '<div class="card"><div class="card-body"><div class="loading-wrap">' +
+    '<div class="loading-spinner"></div>' +
+    '<div class="loading-text">Building your carbohydrate loading plan…</div>' +
+    '<div class="loading-sub">This takes about 20 seconds</div>' +
+    '</div></div></div>';
+}
+
+// ── EVENTS ──
+function attachEvents(stepName) {
+  // Restore textarea values (they reset on re-render)
+  var ta = document.getElementById('additional_notes');
+  if (ta) ta.value = S.additional_notes;
+
+  if (stepName === 'notes' && S.notes_instructions.length > 0) {
+    renderNotesAnalysis();
+  }
+}
+
+function save(key, value) {
+  S[key] = value;
+  validateStep(STEPS[S.step]);
+}
+
+function toggleArr(key, value, checked) {
+  if (!S[key]) S[key] = [];
+  if (value === 'No protein — carbs only' && checked) {
+    S[key] = ['No protein — carbs only'];
+  } else if (checked) {
+    var idx = S[key].indexOf('No protein — carbs only');
+    if (idx !== -1) S[key].splice(idx, 1);
+    if (S[key].indexOf(value) === -1) S[key].push(value);
+  } else {
+    var i = S[key].indexOf(value);
+    if (i !== -1) S[key].splice(i, 1);
+  }
+  validateStep(STEPS[S.step]);
+  // Update select-all button if present
+  var btn = document.querySelector('.select-all-btn');
+  if (btn) {
+    var name = btn.id.replace('sa-','');
+    var allFoods = FOODS[name.replace('foods_','')];
+    if (allFoods) {
+      var sel = S[name] || [];
+      var allChk = allFoods.every(function(f){ return sel.indexOf(f)!==-1; });
+      btn.textContent = allChk ? 'Deselect All' : 'Select All';
+      if (allChk) btn.classList.add('all-selected'); else btn.classList.remove('all-selected');
+    }
+  }
+}
+
+function selectAll(stateKey, btnId, btn) {
+  var section = stateKey.replace('foods_','');
+  var allFoods = FOODS[section] || [];
+  var allowed = null;
+  if (S.cooking_situation === 'microwave' && MICROWAVE_FOODS[section]) allowed = MICROWAVE_FOODS[section];
+  if (S.cooking_situation === 'no_cook' && NOCOOK_FOODS[section]) allowed = NOCOOK_FOODS[section];
+  var visible = allowed ? allFoods.filter(function(f){ return allowed.indexOf(f)!==-1; }) : allFoods;
+  var allChecked = visible.every(function(f){ return (S[stateKey]||[]).indexOf(f)!==-1; });
   if (!allChecked) {
+    S[stateKey] = visible.slice();
     btn.textContent = 'Deselect All';
     btn.classList.add('all-selected');
   } else {
+    S[stateKey] = [];
     btn.textContent = 'Select All';
     btn.classList.remove('all-selected');
   }
+  render();
 }
 
-document.addEventListener('change', function(e) {
-  if (e.target.type !== 'checkbox') return;
-  var btnMap = {
-    'foods_breakfast':    'select-all-breakfast',
-    'foods_lunch_dinner': 'select-all-lunch',
-    'foods_snacks':       'select-all-snacks',
-    'foods_race_morning': 'select-all-race',
-  };
-  var btnId = btnMap[e.target.name];
-  if (!btnId) return;
-  var btn = document.getElementById(btnId);
+function validateStep(stepName) {
+  var btn = document.getElementById('btn-next-race') ||
+            document.getElementById('btn-next-logistics') ||
+            document.getElementById('btn-next-dietary') ||
+            document.getElementById('btn-next-foods') ||
+            document.getElementById('btn-next-notes') ||
+            document.getElementById('btn-next-welcome');
   if (!btn) return;
-  var checkboxes = document.querySelectorAll('input[name="' + e.target.name + '"]');
-  var allChecked = Array.from(checkboxes).every(function(cb) { return cb.checked; });
-  btn.textContent = allChecked ? 'Deselect All' : 'Select All';
-  if (allChecked) btn.classList.add('all-selected');
-  else btn.classList.remove('all-selected');
-});
 
-// ── COOKING SITUATION FOOD FILTERING ──
-var COOKING_FOODS = {
-  restaurant: null, // null = show all
-  full_kitchen: null, // null = show all
-  microwave: {
-    foods_breakfast:    ["Bagel", "White toast", "English muffin", "Instant oatmeal packets", "Microwaveable rice pouch", "Banana", "Applesauce cup", "Corn flakes", "Oatmeal", "White rice"],
-    foods_lunch_dinner: ["White rice", "Microwaveable rice pouch", "Baked potato", "White rolls", "Dinner roll", "Canned soup", "Instant mashed potatoes", "White bread sandwich", "Mashed potatoes"],
-    foods_snacks:       ["Pretzels", "Fat-free fig newtons", "Animal crackers", "Graham crackers", "Saltines", "Rice cakes", "Applesauce cup", "Banana", "White bread with honey", "Bagel with jam", "Low-fat granola bar", "Dried mango", "Gummy bears / fruit snacks", "Baked Lays (1.125 oz bag)", "Gatorade"],
-    foods_race_morning: ["Applesauce cup", "Banana", "Instant oatmeal", "White toast with honey", "Bagel with honey", "Rice cakes with honey", "Gatorade", "Apple juice", "White grape juice"]
-  },
-  no_cook: {
-    foods_breakfast:    ["Bagel", "White toast", "English muffin", "Banana", "Applesauce cup", "Corn flakes", "Instant oatmeal packets"],
-    foods_lunch_dinner: ["White bread sandwich", "White rolls", "Bagel", "Pretzels", "Rice cakes", "Applesauce cup", "Canned soup"],
-    foods_snacks:       ["Pretzels", "Fat-free fig newtons", "Animal crackers", "Graham crackers", "Saltines", "Rice cakes", "Applesauce cup", "Banana", "White bread with honey", "Bagel with jam", "Low-fat granola bar", "Dried mango", "Gummy bears / fruit snacks", "Baked Lays (1.125 oz bag)", "Gatorade"],
-    foods_race_morning: ["Applesauce cup", "Banana", "Instant oatmeal", "White toast with honey", "Bagel with honey", "Rice cakes with honey", "Gatorade", "Apple juice", "White grape juice"]
+  var valid = false;
+  switch(stepName) {
+    case 'race_info':
+      valid = !!(S.athlete_name && S.race_name && S.race_type && S.race_date && S.race_start_time && S.expected_finish_time && S.body_weight_lbs);
+      break;
+    case 'logistics':
+      valid = !!(S.cooking_situation && S.gi_sensitivity && S.topup_format);
+      break;
+    default:
+      valid = true;
   }
-};
-
-function filterFoodsByCooking(situation) {
-  var allowed = COOKING_FOODS[situation];
-  var groups = ['foods_breakfast', 'foods_lunch_dinner', 'foods_snacks', 'foods_race_morning'];
-  groups.forEach(function(group) {
-    var items = document.querySelectorAll('input[name="' + group + '"]');
-    items.forEach(function(cb) {
-      var label = cb.closest('.check-item');
-      if (!label) return;
-      if (!allowed || !allowed[group]) {
-        // Show all
-        label.style.display = '';
-        label.style.opacity = '1';
-      } else {
-        var show = allowed[group].indexOf(cb.value) !== -1;
-        label.style.display = show ? '' : 'none';
-        if (!show) cb.checked = false; // uncheck hidden items
-      }
-    });
-    // Update select-all button state after filtering
-    var btnMap = {
-      'foods_breakfast':    'select-all-breakfast',
-      'foods_lunch_dinner': 'select-all-lunch',
-      'foods_snacks':       'select-all-snacks',
-      'foods_race_morning': 'select-all-race',
-    };
-    var btn = document.getElementById(btnMap[group]);
-    if (btn) {
-      btn.textContent = 'Select All';
-      btn.classList.remove('all-selected');
-    }
-  });
+  btn.disabled = !valid;
 }
 
-// Listen for cooking situation changes
-document.addEventListener('change', function(e) {
-  if (e.target.name === 'cooking_situation') {
-    filterFoodsByCooking(e.target.value);
+function goNext() {
+  if (S.step < STEPS.length - 1) {
+    S.step++;
+    render();
+    window.scrollTo({top: 0, behavior: 'smooth'});
   }
-});
+}
+
+function goBack() {
+  if (S.step > 0) {
+    S.step--;
+    render();
+    window.scrollTo({top: 0, behavior: 'smooth'});
+  }
+}
 
 // ── NOTES ANALYSIS ──
-var _notesAnalysisTimer = null;
-var _lastAnalyzedNotes = '';
-window._confirmedInstructions = [];
-
 function analyzeNotes() {
-  var notes = document.getElementById('additional_notes').value.trim();
-  if (!notes || notes === _lastAnalyzedNotes) return;
-  _lastAnalyzedNotes = notes;
+  var notes = S.additional_notes.trim();
+  save('additional_notes', notes);
+  if (!notes || notes === S._lastNotes) return;
+  S._lastNotes = notes;
 
-  var wrap = document.getElementById('notes-analysis-wrap');
-  var analyzing = document.getElementById('notes-analyzing');
-  var instrWrap = document.getElementById('notes-instructions-wrap');
+  var area = document.getElementById('notes-analysis-area');
+  if (!area) return;
+  area.innerHTML = '<div class="analysis-loading"><div class="analysis-spinner"></div>Analyzing your notes…</div>';
 
-  wrap.style.display = 'block';
-  analyzing.style.display = 'flex';
-  instrWrap.style.display = 'none';
-
-  // Gather current approved foods for conflict detection
-  var approvedFoods = [];
-  ['foods_breakfast','foods_lunch_dinner','foods_snacks','foods_race_morning'].forEach(function(name) {
-    document.querySelectorAll('input[name="' + name + '"]:checked').forEach(function(cb) {
-      approvedFoods.push(cb.value.toLowerCase());
-    });
-  });
-
-  var dietaryRestrictions = document.querySelector('[name="dietary_restrictions"]')?.value || '';
-  var cookingSituation = document.querySelector('input[name="cooking_situation"]:checked')?.value || '';
+  var approvedFoods = (S.foods_breakfast||[]).concat(S.foods_lunch_dinner||[]).concat(S.foods_snacks||[]).concat(S.foods_race_morning||[]).map(function(f){ return f.toLowerCase(); });
 
   fetch(WORKER_URL + '/analyze-notes', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      notes: notes,
-      dietary_restrictions: dietaryRestrictions,
-      cooking_situation: cookingSituation,
-    })
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({notes: notes, dietary_restrictions: S.dietary_restrictions, cooking_situation: S.cooking_situation})
   })
-  .then(function(r) { return r.json(); })
+  .then(function(r){ return r.json(); })
   .then(function(data) {
-    analyzing.style.display = 'none';
     if (!data.instructions || data.instructions.length === 0) {
-      wrap.style.display = 'none';
+      area.innerHTML = '';
       return;
     }
-
-    window._confirmedInstructions = data.instructions.map(function(inst, i) {
-      return { id: i, instruction: inst.instruction, category: inst.category, confirmed: true };
-    });
-
-    // Detect conflicts
-    var conflicts = [];
-    window._confirmedInstructions.forEach(function(inst) {
+    S.notes_instructions = data.instructions.map(function(inst, i) {
+      // Detect conflicts
+      var conflict = null;
       if (inst.category === 'food_exclude') {
-        // Check if excluded food is in approved checkboxes
-        var foodName = inst.instruction.toLowerCase();
+        var instrLower = inst.instruction.toLowerCase();
         approvedFoods.forEach(function(af) {
-          if (foodName.indexOf(af) !== -1 || af.indexOf(foodName.replace(/exclude|no |remove /g,'').trim()) !== -1) {
-            conflicts.push({ instruction_id: inst.id, approved_food: af, instruction: inst.instruction });
+          if (instrLower.indexOf(af) !== -1 || af.indexOf(instrLower.replace(/exclude|no |remove /g,'').trim()) !== -1) {
+            conflict = af;
           }
         });
       }
+      return {id: i, instruction: inst.instruction, category: inst.category, confirmed: true, conflict: conflict};
     });
-
-    renderInstructions(conflicts);
-    instrWrap.style.display = 'block';
+    renderNotesAnalysis();
   })
-  .catch(function(err) {
-    analyzing.style.display = 'none';
-    wrap.style.display = 'none';
-  });
+  .catch(function() { area.innerHTML = ''; });
 }
 
-function renderInstructions(conflicts) {
-  var list = document.getElementById('notes-instructions-list');
-  list.innerHTML = '';
+function renderNotesAnalysis() {
+  var area = document.getElementById('notes-analysis-area');
+  if (!area || !S.notes_instructions.length) return;
 
-  window._confirmedInstructions.forEach(function(inst) {
-    var hasConflict = conflicts.find(function(c) { return c.instruction_id === inst.id; });
-    var row = document.createElement('div');
-    row.style.cssText = 'display:flex;align-items:flex-start;gap:10px;padding:8px 10px;background:rgba(255,255,255,0.05);border-radius:8px;margin-bottom:6px;border:1px solid rgba(255,255,255,0.08);';
+  var html = '<div style="margin-top:12px;font-size:10.5px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:rgba(255,255,255,0.4);margin-bottom:8px;">Extracted instructions — toggle any to ignore:</div>';
 
-    var toggleWrap = document.createElement('div');
-    toggleWrap.style.cssText = 'display:flex;gap:4px;flex-shrink:0;margin-top:1px;';
-
-    var useBtn = document.createElement('button');
-    useBtn.type = 'button';
-    useBtn.textContent = 'Use';
-    useBtn.style.cssText = 'font-size:10px;font-weight:600;padding:2px 8px;border-radius:4px;border:none;cursor:pointer;font-family:inherit;background:#204e99;color:#fff;';
-
-    var ignoreBtn = document.createElement('button');
-    ignoreBtn.type = 'button';
-    ignoreBtn.textContent = 'Ignore';
-    ignoreBtn.style.cssText = 'font-size:10px;font-weight:600;padding:2px 8px;border-radius:4px;border:1px solid rgba(255,255,255,0.2);cursor:pointer;font-family:inherit;background:transparent;color:rgba(255,255,255,0.4);';
-
-    useBtn.onclick = function() {
-      inst.confirmed = true;
-      useBtn.style.background = '#204e99';
-      useBtn.style.color = '#fff';
-      ignoreBtn.style.background = 'transparent';
-      ignoreBtn.style.color = 'rgba(255,255,255,0.4)';
-      row.style.opacity = '1';
-    };
-    ignoreBtn.onclick = function() {
-      inst.confirmed = false;
-      ignoreBtn.style.background = 'rgba(255,255,255,0.1)';
-      ignoreBtn.style.color = 'rgba(255,255,255,0.7)';
-      useBtn.style.background = 'transparent';
-      useBtn.style.color = 'rgba(255,255,255,0.3)';
-      row.style.opacity = '0.5';
-    };
-
-    toggleWrap.appendChild(useBtn);
-    toggleWrap.appendChild(ignoreBtn);
-
-    var textWrap = document.createElement('div');
-    textWrap.style.cssText = 'flex:1;';
-
-    var instrText = document.createElement('div');
-    instrText.style.cssText = 'font-size:12.5px;color:rgba(255,255,255,0.85);line-height:1.5;';
-    instrText.textContent = inst.instruction;
-
-    textWrap.appendChild(instrText);
-
-    if (hasConflict) {
-      var conflictNote = document.createElement('div');
-      conflictNote.style.cssText = 'font-size:11px;color:#f2c94c;margin-top:4px;';
-      conflictNote.textContent = '⚠ Conflicts with your approved food selection for "' + hasConflict.approved_food + '" — this note will override the checkbox if you keep it as "Use".';
-      textWrap.appendChild(conflictNote);
-    }
-
-    row.appendChild(toggleWrap);
-    row.appendChild(textWrap);
-    list.appendChild(row);
+  S.notes_instructions.forEach(function(inst) {
+    html += '<div class="instruction-row ' + (inst.confirmed?'':'ignored') + '" id="instr-'+inst.id+'">' +
+      '<div class="instr-btns">' +
+      '<button class="instr-btn use" onclick="setInstr('+inst.id+',true)">Use</button>' +
+      '<button class="instr-btn ignore" onclick="setInstr('+inst.id+',false)">Ignore</button>' +
+      '</div>' +
+      '<div>' +
+      '<div class="instr-text">'+escHtml(inst.instruction)+'</div>' +
+      (inst.conflict ? '<div class="conflict-note">⚠ Conflicts with your approved food "'+inst.conflict+'" — note will override if kept as Use.</div>' : '') +
+      '</div>' +
+      '</div>';
   });
+
+  area.innerHTML = html;
 }
 
-// No-protein checkbox logic
-document.addEventListener('change', function(e) {
-  if (e.target.id === 'no-protein-cb' && e.target.checked) {
-    document.querySelectorAll('input[name="preferred_proteins"]').forEach(function(cb) {
-      if (cb.id !== 'no-protein-cb') cb.checked = false;
-    });
-  } else if (e.target.name === 'preferred_proteins' && e.target.id !== 'no-protein-cb' && e.target.checked) {
-    document.getElementById('no-protein-cb').checked = false;
-  }
-});
-
-var WORKER_URL = "https://qt2-carb-loader-agent.jesse-477.workers.dev";
-
-// ── On load: validate purchase token ──
-(function() {
-  var params = new URLSearchParams(window.location.search);
-  var token  = params.get('token');
-
-  if (!token) {
-    showError("No access token found. Please use the link from your purchase confirmation email.");
-    return;
-  }
-
-  // Store token for use on submit
-  window._purchaseToken = token;
-
-  // Validate against Worker
-  fetch(WORKER_URL + '/validate/' + token)
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      if (!data.valid) {
-        showError(data.reason || "This link is invalid or has already been used.");
-      } else {
-        // Personalise greeting if first name available
-        if (data.first_name) {
-          var intro = document.querySelector('.intro p');
-          if (intro) intro.innerHTML = intro.innerHTML.replace(
-            'This form takes',
-            'Hi ' + data.first_name + '. This form takes'
-          );
-        }
-        document.getElementById('intake-form').style.display = 'block';
-        document.getElementById('token-checking').style.display = 'none';
-        // Store email from token record for later use
-        if (data.email) window._purchaseEmail = data.email;
-      }
-    })
-    .catch(function(err) {
-      showError("Could not verify your access link. Please try again or contact support.");
-    });
-})();
-
-function showError(msg) {
-  document.getElementById('token-checking').style.display = 'none';
-  document.getElementById('token-error').style.display = 'flex';
-  document.getElementById('token-error-msg').textContent = msg;
+function setInstr(id, confirmed) {
+  var inst = S.notes_instructions.find(function(i){ return i.id === id; });
+  if (inst) inst.confirmed = confirmed;
+  renderNotesAnalysis();
 }
 
-// ── Form submit ──
-document.getElementById('intake-form').addEventListener('submit', function(e) {
-  e.preventDefault();
-  var form = e.target;
-  var valid = true;
+// ── SUBMIT ──
+function submitForm() {
+  S.step = STEPS.indexOf('generate');
+  render();
 
-  // Validate text/number/select required fields
-  var required = form.querySelectorAll('input[required], select[required]');
-  required.forEach(function(el) {
-    if (!el.value) { el.style.borderColor = 'rgba(252,129,129,0.6)'; valid = false; }
-    else { el.style.borderColor = ''; }
-  });
+  // Build formData
+  var formData = {
+    athlete_name: S.athlete_name,
+    race_name: S.race_name,
+    race_type: S.race_type,
+    race_date: S.race_date,
+    race_start_time: S.race_start_time,
+    expected_finish_time: S.expected_finish_time,
+    body_weight_lbs: S.body_weight_lbs,
+    cooking_situation: S.cooking_situation,
+    gi_sensitivity: S.gi_sensitivity,
+    topup_format: S.topup_format,
+    preferred_proteins: S.preferred_proteins.join(','),
+    dietary_restrictions: S.dietary_restrictions,
+    foods_never_include: S.foods_never_include,
+    foods_breakfast: S.foods_breakfast.join(','),
+    foods_lunch_dinner: S.foods_lunch_dinner.join(','),
+    foods_snacks: S.foods_snacks.join(','),
+    foods_race_morning: S.foods_race_morning.join(','),
+    foods_breakfast_custom: S.foods_breakfast_custom,
+    foods_lunch_dinner_custom: S.foods_lunch_dinner_custom,
+    foods_snacks_custom: S.foods_snacks_custom,
+    foods_race_morning_custom: S.foods_race_morning_custom,
+    additional_notes: S.additional_notes,
+    notes_instructions: S.notes_instructions.filter(function(i){ return i.confirmed; }).map(function(i){ return i.instruction; }).join('|'),
+    email: S._purchaseEmail || '',
+  };
 
-  // Validate required radio groups
-  var cookingChecked = form.querySelector('input[name="cooking_situation"]:checked');
-  var giChecked      = form.querySelector('input[name="gi_sensitivity"]:checked');
-  if (!cookingChecked) valid = false;
-  if (!giChecked)      valid = false;
-
-  if (!valid) {
-    window.scrollTo({top: 0, behavior: 'smooth'});
-    return;
-  }
-
-  // Collect form data
-  var formData = {};
-  var textFields = ['athlete_name','race_name','race_type','race_date','race_start_time',
-    'expected_finish_time','body_weight_lbs','dietary_restrictions',
-    'foods_never_include','additional_notes',
-    'foods_breakfast_custom','foods_lunch_dinner_custom',
-    'foods_snacks_custom','foods_race_morning_custom'];
-  textFields.forEach(function(name) {
-    var el = form.querySelector('[name="' + name + '"]');
-    if (el) formData[name] = el.value.trim();
-  });
-
-  formData['cooking_situation'] = cookingChecked ? cookingChecked.value : '';
-  formData['gi_sensitivity']    = giChecked      ? giChecked.value      : '';
-
-  var checkFields = ['foods_breakfast','foods_lunch_dinner','foods_snacks','foods_race_morning','preferred_proteins'];
-  checkFields.forEach(function(name) {
-    var checked = Array.from(form.querySelectorAll('input[name="' + name + '"]:checked'))
-      .map(function(el) { return el.value; });
-    formData[name] = checked.join(',');
-  });
-
-  // Add confirmed notes instructions
-  formData['notes_instructions'] = window._confirmedInstructions
-    ? window._confirmedInstructions.filter(function(i) { return i.confirmed; }).map(function(i) { return i.instruction; }).join('|')
-    : '';
-
-  // Capture email for form_data
-  var email_field_val = form.querySelector('[name="athlete_name"]') ? 
-    (window._purchaseEmail || '') : '';
-
-  // Show submitting state
-  var btn = document.querySelector('.submit-btn');
-  btn.textContent = 'Generating your plan…';
-  btn.disabled = true;
-
-  // Add email to form_data so it's available for race-week email scheduling
-  formData['email'] = email_field_val || '';
-
-  // POST to Worker /session — get plan token back
   fetch(WORKER_URL + '/session', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      purchase_token: window._purchaseToken,
-      form_data: formData
-    })
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({purchase_token: S.purchaseToken, form_data: formData})
   })
-  .then(function(r) { return r.json(); })
+  .then(function(r){ return r.json(); })
   .then(function(data) {
     if (data.error) {
-      btn.textContent = 'Generate My Carb-Loading Plan';
-      btn.disabled = false;
-      alert("Error: " + data.error);
+      showGateError(data.error);
       return;
     }
-    // Redirect to output page with plan token
-    window.location.href = 'https://carb-loading.qt2systems.com/qt2_carbload_output.html?plan_token=' + data.plan_token;
+    window.location.href = OUTPUT_URL + '?plan_token=' + data.plan_token;
   })
-  .catch(function(err) {
-    btn.textContent = 'Generate My Carb-Loading Plan';
-    btn.disabled = false;
-    alert("Something went wrong. Please try again.");
-  });
-});
+  .catch(function(err) { showGateError(err.message); });
+}
+
+// ── TOKEN GATE ──
+function init() {
+  var params = new URLSearchParams(window.location.search);
+  var token = params.get('token');
+
+  if (!token) {
+    showGateError('No access token found. Please use the link from your purchase confirmation email.');
+    return;
+  }
+  S.purchaseToken = token;
+
+  fetch(WORKER_URL + '/validate/' + token)
+    .then(function(r){ return r.json(); })
+    .then(function(data) {
+      if (!data.valid) {
+        showGateError(data.reason || 'This link is invalid or has already been used.');
+        return;
+      }
+      S.firstName = data.first_name || '';
+      S._purchaseEmail = data.email || '';
+      if (S.firstName) S.athlete_name = S.firstName;
+      S.step = 0;
+      render();
+    })
+    .catch(function() { showGateError('Could not verify your access link. Please try again or contact support.'); });
+}
+
+function showGateError(msg) {
+  document.getElementById('wizard-outer').innerHTML =
+    '<div class="gate-error">' +
+    '<div class="gate-error-title">Access Link Invalid</div>' +
+    '<div class="gate-error-msg">' + escHtml(msg) + '</div>' +
+    '<div style="font-size:11px;color:rgba(255,255,255,0.3);margin-top:0.5rem;">Questions? Email us at services@qt2systems.com</div>' +
+    '</div>';
+}
+
+function escHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+init();
 </script>
 </body>
 </html>
